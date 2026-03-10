@@ -160,17 +160,20 @@
             grid-template-columns: 1fr 350px;
             gap: 20px;
             height: calc(100vh - 100px);
+            min-height: 500px;
         }
         .dashboard-left {
             display: flex;
             flex-direction: column;
             min-height: 0;
+            overflow: hidden;
         }
         .dashboard-right {
             display: flex;
             flex-direction: column;
             gap: 20px;
             min-height: 0;
+            overflow: hidden;
         }
         
         .card {
@@ -191,11 +194,38 @@
             flex-shrink: 0;
         }
         
-        /* Mini Calendar - scrollable with proper height */
+        /* Mini Calendar - properly contained */
         .mini-calendar-container {
             flex: 1;
             min-height: 0;
             overflow: hidden;
+            position: relative;
+        }
+        
+        #miniCalendar {
+            height: 100% !important;
+            min-height: 300px;
+        }
+        
+        #miniCalendar .fc-toolbar {
+            padding: 5px 0;
+            margin-bottom: 10px !important;
+            flex-wrap: wrap;
+        }
+        
+        #miniCalendar .fc-toolbar h2 {
+            font-size: 1rem;
+        }
+        
+        #miniCalendar .fc-view-container {
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        
+        #miniCalendar .fc-day-grid-container,
+        #miniCalendar .fc-time-grid-container {
+            overflow-y: auto;
+            overflow-x: hidden;
         }
         
         /* Deadline Cards - scrollable */
@@ -203,12 +233,31 @@
             flex: 1;
             overflow-y: auto;
             min-height: 0;
+            padding-right: 5px;
+        }
+        
+        /* Custom scrollbar */
+        .deadline-content::-webkit-scrollbar,
+        #miniCalendar .fc-view-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .deadline-content::-webkit-scrollbar-track,
+        #miniCalendar .fc-view-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        
+        .deadline-content::-webkit-scrollbar-thumb,
+        #miniCalendar .fc-view-container::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 3px;
         }
         
         .deadline-card {
             background: #fff3cd;
             border-left: 4px solid #ffc107;
-            padding: 15px;
+            padding: 12px;
             border-radius: 8px;
             margin-bottom: 10px;
         }
@@ -219,18 +268,19 @@
         .deadline-card h4 {
             color: #333;
             margin-bottom: 5px;
+            font-size: 0.95rem;
         }
         .deadline-card p {
             color: #666;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
         .priority-badge {
             display: inline-block;
-            padding: 3px 10px;
+            padding: 2px 8px;
             border-radius: 12px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: bold;
-            margin-left: 10px;
+            margin-left: 8px;
         }
         .priority-high { background: #dc3545; color: white; }
         .priority-medium { background: #ffc107; color: #333; }
@@ -240,30 +290,19 @@
             text-align: center;
             color: #999;
             padding: 20px;
-        }
-        
-        /* FullCalendar custom styles */
-        #miniCalendar {
-            height: 100%;
-            min-height: 400px;
-        }
-        .fc-toolbar {
-            padding: 10px 0;
-            margin-bottom: 10px !important;
-        }
-        .fc-event {
-            cursor: pointer;
+            font-size: 0.9rem;
         }
         
         /* Sleep schedule indicator */
         .sleep-indicator {
             background: #e9ecef;
             color: #6c757d;
-            padding: 5px 10px;
+            padding: 8px 12px;
             border-radius: 5px;
             font-size: 0.8rem;
             margin-top: 10px;
             text-align: center;
+            flex-shrink: 0;
         }
         
         /* Mobile */
@@ -305,7 +344,7 @@
                 <li><a href="dashboard.php" class="active"><span>🏠</span> Dashboard</a></li>
                 <li><a href="calendar.php"><span>📅</span> Calendar</a></li>
                 <li><a href="tasks.php"><span>📝</span> Tasks</a></li>
-                <li><a href="document-analyzer.php"><span>📝</span> Add Task</a></li>
+                <li><a href="document-analyzer.php"><span>📄</span> Add Task</a></li>
                 <li><a href="schedule.php"><span>📚</span> Schedule</a></li>
                 <li><a href="settings.php"><span>⚙️</span> Settings</a></li>
             </ul>
@@ -340,14 +379,14 @@
                     <div class="card">
                         <h2>📋 Due Today</h2>
                         <div class="deadline-content" id="dueToday">
-                            <div class="no-deadlines">No tasks due today</div>
+                            <div class="no-deadlines">No tasks due today 🎉</div>
                         </div>
                     </div>
                     
                     <div class="card">
                         <h2>📋 Due Tomorrow</h2>
                         <div class="deadline-content" id="dueTomorrow">
-                            <div class="no-deadlines">No tasks due tomorrow</div>
+                            <div class="no-deadlines">No tasks due tomorrow 🎉</div>
                         </div>
                     </div>
                 </div>
@@ -377,7 +416,6 @@
             sidebar.classList.toggle('collapsed');
             mainContent.classList.toggle('expanded');
             
-            // Show/hide floating hamburger
             if (sidebar.classList.contains('collapsed')) {
                 floatingHamburger.classList.add('visible');
             } else {
@@ -390,18 +428,26 @@
             window.location.href = '../auth/login.php';
         }
         
-        // Load tasks
+        // Load data
         const tasks = JSON.parse(localStorage.getItem('dailybrew_tasks_' + user.id) || '[]');
         const schedule = JSON.parse(localStorage.getItem('dailybrew_schedule_' + user.id) || '[]');
         const blocks = JSON.parse(localStorage.getItem('dailybrew_blocks_' + user.id) || '[]');
-        const preferences = JSON.parse(localStorage.getItem('dailybrew_preferences_' + user.id) || '{}');
+        
+        // Load preferences with defaults
+        let preferences = { earliest_time_start: '08:00', latest_time_end: '22:00', study_block_duration: 30, default_profile: 'seamless', sleep_schedule: { start: '22:00', end: '08:00' } };
+        try {
+            const prefsStr = localStorage.getItem('dailybrew_preferences_' + user.id);
+            if (prefsStr) {
+                preferences = { ...preferences, ...JSON.parse(prefsStr) };
+            }
+        } catch (e) {
+            console.log('Using default preferences');
+        }
         
         // Display sleep schedule
-        if (preferences.sleep_schedule) {
-            const sleep = preferences.sleep_schedule;
-            document.getElementById('sleepIndicator').textContent = 
-                `💤 Sleep: ${formatTime(sleep.start)} - ${formatTime(sleep.end)}`;
-        }
+        const sleep = preferences.sleep_schedule || { start: '22:00', end: '08:00' };
+        document.getElementById('sleepIndicator').textContent = 
+            '💤 Sleep: ' + formatTime(sleep.start) + ' - ' + formatTime(sleep.end);
         
         function formatTime(time24) {
             const [hours, minutes] = time24.split(':');
@@ -448,9 +494,6 @@
         // Initialize mini calendar - DAY VIEW ONLY
         const events = [];
         
-        // Add sleep schedule as background
-        const sleepSchedule = preferences.sleep_schedule || { start: '22:00', end: '08:00' };
-        
         // Add tasks as events
         tasks.forEach(task => {
             if (task.status !== 'completed') {
@@ -464,9 +507,8 @@
             }
         });
         
-        // Add study blocks as events
+        // Add study blocks as events (only for uncompleted tasks)
         blocks.forEach(block => {
-            // Only show blocks for uncompleted tasks
             const task = tasks.find(t => t.id === block.taskId);
             if (task && task.status !== 'completed') {
                 events.push({
@@ -485,7 +527,6 @@
             const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             const dayIndex = days.indexOf(s.dayOfWeek);
             
-            // Recurring weekly for 8 weeks
             for (let i = 0; i < 8; i++) {
                 const weekStart = moment().startOf('week');
                 const eventDate = weekStart.add(dayIndex, 'days').add(i, 'weeks');
@@ -500,17 +541,35 @@
             }
         });
         
+        // Add sleep schedule as background events
+        const sleepStart = parseInt(sleep.start.split(':')[0]);
+        const sleepEnd = parseInt(sleep.end.split(':')[0]);
+        
+        for (let i = 0; i < 14; i++) {
+            const day = moment().startOf('week').add(i, 'days');
+            events.push({
+                title: '💤',
+                start: day.format('YYYY-MM-DD') + 'T' + sleep.start,
+                end: day.format('YYYY-MM-DD') + 'T' + sleep.end,
+                backgroundColor: '#e9ecef',
+                borderColor: '#dee2e6',
+                textColor: '#6c757d',
+                rendering: 'background',
+                type: 'sleep'
+            });
+        }
+        
         // Initialize calendar - DAY VIEW ONLY
         $('#miniCalendar').fullCalendar({
             header: {
                 left: 'prev,next',
                 center: 'title',
-                right: '' // Removed month/week buttons - day view only
+                right: '' 
             },
-            defaultView: 'agendaDay', // Day view only
+            defaultView: 'agendaDay',
             defaultDate: moment(),
             events: events,
-            height: 'auto',
+            height: 'parent',
             minTime: '06:00:00',
             maxTime: '23:00:00',
             allDaySlot: false,
@@ -519,13 +578,14 @@
                 let message = '';
                 if (calEvent.type === 'task') message = 'This is a task deadline';
                 else if (calEvent.type === 'study') message = 'This is an AI-generated study block';
+                else if (calEvent.type === 'sleep') message = 'This is your sleep time';
                 else message = 'This is a class schedule';
                 
                 alert(calEvent.title + '\n' + message);
             }
         });
         
-        // Auto-refresh every minute to update the calendar
+        // Auto-refresh every minute
         setInterval(function() {
             $('#miniCalendar').fullCalendar('refetchEvents');
         }, 60000);

@@ -84,15 +84,57 @@
             padding: 20px; 
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             min-height: calc(100vh - 120px);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
         
         #calendar { 
-            height: calc(100vh - 180px);
-            min-height: 500px;
+            flex: 1;
+            min-height: 0;
+        }
+        
+        /* Calendar container overflow handling */
+        #calendar .fc-toolbar {
+            padding: 10px 0;
+            margin-bottom: 15px !important;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        #calendar .fc-view-container {
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        
+        #calendar .fc-day-grid-container,
+        #calendar .fc-time-grid-container {
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        
+        /* Custom scrollbar */
+        #calendar .fc-view-container::-webkit-scrollbar,
+        #calendar .fc-day-grid-container::-webkit-scrollbar,
+        #calendar .fc-time-grid-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        #calendar .fc-view-container::-webkit-scrollbar-track,
+        #calendar .fc-day-grid-container::-webkit-scrollbar-track,
+        #calendar .fc-time-grid-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        
+        #calendar .fc-view-container::-webkit-scrollbar-thumb,
+        #calendar .fc-day-grid-container::-webkit-scrollbar-thumb,
+        #calendar .fc-time-grid-container::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 3px;
         }
         
         .fc-event { cursor: pointer; }
-        .fc-toolbar { margin-bottom: 20px; }
         .fc-toolbar h2 { font-size: 1.5rem; }
         
         /* Long press indicator */
@@ -167,7 +209,7 @@
                 <li><a href="dashboard.php"><span>🏠</span> Dashboard</a></li>
                 <li><a href="calendar.php" class="active"><span>📅</span> Calendar</a></li>
                 <li><a href="tasks.php"><span>📝</span> Tasks</a></li>
-                <li><a href="document-analyzer.php"><span>📝</span> Add Task</a></li>
+                <li><a href="document-analyzer.php"><span>📄</span> Add Task</a></li>
                 <li><a href="schedule.php"><span>📚</span> Schedule</a></li>
                 <li><a href="settings.php"><span>⚙️</span> Settings</a></li>
             </ul>
@@ -214,7 +256,6 @@
         document.getElementById('userAvatar').textContent = user.firstName.charAt(0);
         
         let pendingDeleteBlock = null;
-        let longPressTimer = null;
         
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -224,7 +265,6 @@
             sidebar.classList.toggle('collapsed');
             mainContent.classList.toggle('expanded');
             
-            // Show/hide floating hamburger
             if (sidebar.classList.contains('collapsed')) {
                 floatingHamburger.classList.add('visible');
             } else {
@@ -241,7 +281,17 @@
         const tasks = JSON.parse(localStorage.getItem('dailybrew_tasks_' + user.id) || '[]');
         const schedule = JSON.parse(localStorage.getItem('dailybrew_schedule_' + user.id) || '[]');
         let blocks = JSON.parse(localStorage.getItem('dailybrew_blocks_' + user.id) || '[]');
-        const preferences = JSON.parse(localStorage.getItem('dailybrew_preferences_' + user.id) || '{}');
+        
+        // Load preferences
+        let preferences = { sleep_schedule: { start: '22:00', end: '08:00' } };
+        try {
+            const prefsStr = localStorage.getItem('dailybrew_preferences_' + user.id);
+            if (prefsStr) {
+                preferences = { ...preferences, ...JSON.parse(prefsStr) };
+            }
+        } catch (e) {
+            console.log('Using default preferences');
+        }
         
         // Build events array
         const events = [];
@@ -294,26 +344,23 @@
             }
         });
         
-        // Add sleep schedule as background events
-        if (preferences.sleep_schedule) {
-            const sleep = preferences.sleep_schedule;
-            const sleepStart = parseInt(sleep.start.split(':')[0]);
-            const sleepEnd = parseInt(sleep.end.split(':')[0]);
-            
-            // Add sleep blocks for each day
-            for (let i = 0; i < 14; i++) {
-                const day = moment().startOf('week').add(i, 'days');
-                events.push({
-                    title: '💤 Sleep',
-                    start: day.format('YYYY-MM-DD') + 'T' + sleep.start,
-                    end: day.format('YYYY-MM-DD') + 'T' + sleep.end,
-                    backgroundColor: '#e9ecef',
-                    borderColor: '#dee2e6',
-                    textColor: '#6c757d',
-                    rendering: 'background',
-                    type: 'sleep'
-                });
-            }
+        // Add sleep schedule as background events (greyed out)
+        const sleep = preferences.sleep_schedule || { start: '22:00', end: '08:00' };
+        const sleepStart = parseInt(sleep.start.split(':')[0]);
+        const sleepEnd = parseInt(sleep.end.split(':')[0]);
+        
+        for (let i = 0; i < 14; i++) {
+            const day = moment().startOf('week').add(i, 'days');
+            events.push({
+                title: '💤 Sleep',
+                start: day.format('YYYY-MM-DD') + 'T' + sleep.start,
+                end: day.format('YYYY-MM-DD') + 'T' + sleep.end,
+                backgroundColor: '#e9ecef',
+                borderColor: '#dee2e6',
+                textColor: '#6c757d',
+                rendering: 'background',
+                type: 'sleep'
+            });
         }
         
         // Initialize calendar - REMOVED "today" button
@@ -329,22 +376,22 @@
             maxTime: '23:00:00',
             allDaySlot: true,
             slotDuration: '00:30:00',
+            height: 'parent',
             eventClick: function(calEvent) {
                 let message = '';
                 if (calEvent.type === 'task') message = 'This is a task deadline';
                 else if (calEvent.type === 'study') {
                     message = 'This is an AI-generated study block\n\nLong press to delete!';
                 } else if (calEvent.type === 'sleep') {
-                    message = 'This is your sleep time';
+                    message = 'This is your sleep time (no study blocks scheduled here)';
                 } else message = 'This is a class schedule';
                 
                 alert(calEvent.title + '\n' + message);
             },
             eventRender: function(event, element) {
-                // Add long press support for study blocks
                 if (event.type === 'study') {
                     let pressTimer;
-                    let pressDuration = 1000; // 1 second long press
+                    const pressDuration = 1000;
                     
                     element.on('mousedown touchstart', function(e) {
                         pressTimer = setTimeout(function() {
@@ -386,21 +433,14 @@
         
         function confirmDelete() {
             if (pendingDeleteBlock) {
-                // Remove the block
                 blocks = blocks.filter(b => b.id !== pendingDeleteBlock);
                 localStorage.setItem('dailybrew_blocks_' + user.id, JSON.stringify(blocks));
-                
-                // Refresh calendar
                 $('#calendar').fullCalendar('refetchEvents');
-                
                 closeDeleteModal();
-                
-                // Show feedback
                 alert('Study block deleted successfully!');
             }
         }
         
-        // Close modal on outside click
         document.getElementById('deleteModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeDeleteModal();

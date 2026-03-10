@@ -113,14 +113,6 @@
         .analysis-label { color: #666; }
         .analysis-value { font-weight: bold; color: #333; }
         
-        .ai-chat { background: #f8f9fa; border-radius: 10px; padding: 20px; margin-top: 20px; }
-        .chat-messages { max-height: 300px; overflow-y: auto; margin-bottom: 15px; }
-        .chat-message { padding: 10px 15px; border-radius: 10px; margin-bottom: 10px; }
-        .chat-message.user { background: #667eea; color: white; margin-left: 20%; }
-        .chat-message.ai { background: #e0e0e0; color: #333; margin-right: 20%; }
-        .chat-input { display: flex; gap: 10px; }
-        .chat-input input { flex: 1; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; }
-        
         .loading { text-align: center; padding: 20px; color: #666; }
         .loading-spinner { 
             border: 3px solid #f3f3f3; 
@@ -154,7 +146,7 @@
                 <li><a href="dashboard.php"><span>🏠</span> Dashboard</a></li>
                 <li><a href="calendar.php"><span>📅</span> Calendar</a></li>
                 <li><a href="tasks.php"><span>📝</span> Tasks</a></li>
-                <li><a href="document-analyzer.php" class="active"><span>📝</span> Add Task</a></li>
+                <li><a href="document-analyzer.php" class="active"><span>📄</span> Add Task</a></li>
                 <li><a href="schedule.php"><span>📚</span> Schedule</a></li>
                 <li><a href="settings.php"><span>⚙️</span> Settings</a></li>
             </ul>
@@ -172,7 +164,7 @@
             <div class="card">
                 <h2>📤 Upload Document (Optional)</h2>
                 <p style="color: #666; margin-bottom: 15px; font-size: 0.9rem;">
-                    Upload a file to automatically extract task details. Supported: PDF, DOCX, TXT, MD
+                    Upload a file to automatically extract task details. The AI will analyze the document and fill in the form below.
                 </p>
                 
                 <div class="upload-area" id="uploadArea">
@@ -190,12 +182,12 @@
                 <form id="taskForm">
                     <div class="form-group">
                         <label>Task Title *</label>
-                        <input type="text" id="taskTitle" required placeholder="e.g., Math Homework Chapter 5">
+                        <input type="text" id="taskTitle" required placeholder="e.g., Math Chapter 5 Homework">
                     </div>
                     
                     <div class="form-group">
                         <label>Description</label>
-                        <textarea id="taskDescription" rows="4" placeholder="Task instructions, details, or notes..."></textarea>
+                        <textarea id="taskDescription" rows="4" placeholder="Task instructions, details, or notes... (AI will summarize from document)"></textarea>
                     </div>
                     
                     <div class="form-group">
@@ -212,13 +204,17 @@
                         </select>
                     </div>
                     
-                    <button type="submit" class="btn">🤖 Analyze with AI & Create Task</button>
+                    <button type="submit" class="btn">🤖 Create Task</button>
                 </form>
             </div>
             
             <div class="card" id="analysisResult" style="display: none;">
                 <h2>📊 AI Analysis</h2>
                 <div class="analysis-result">
+                    <div class="analysis-item">
+                        <span class="analysis-label">Activity Type:</span>
+                        <span class="analysis-value" id="resultType">-</span>
+                    </div>
                     <div class="analysis-item">
                         <span class="analysis-label">Priority:</span>
                         <span class="analysis-value" id="resultPriority">-</span>
@@ -228,25 +224,8 @@
                         <span class="analysis-value" id="resultComplexity">-</span>
                     </div>
                     <div class="analysis-item">
-                        <span class="analysis-label">Estimated Study Hours:</span>
-                        <span class="analysis-value" id="resultHours">-</span>
-                    </div>
-                    <div class="analysis-item">
                         <span class="analysis-label">Study Tips:</span>
                         <span class="analysis-value" id="resultTips">-</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card">
-                <h2>🤖 AI Assistant</h2>
-                <div class="ai-chat">
-                    <div class="chat-messages" id="chatMessages">
-                        <div class="chat-message ai">Hello! I'm here to help you plan your studies. Upload a document or fill in the task details, and I'll analyze it for you!</div>
-                    </div>
-                    <div class="chat-input">
-                        <input type="text" id="chatInput" placeholder="Ask me anything about your tasks...">
-                        <button class="btn" onclick="sendMessage()">Send</button>
                     </div>
                 </div>
             </div>
@@ -271,7 +250,6 @@
             sidebar.classList.toggle('collapsed');
             mainContent.classList.toggle('expanded');
             
-            // Show/hide floating hamburger
             if (sidebar.classList.contains('collapsed')) {
                 floatingHamburger.classList.add('visible');
             } else {
@@ -331,12 +309,10 @@
                 } else if (extension === 'docx' || extension === 'doc') {
                     text = await extractTextFromDOCX(file);
                 } else {
-                    // Plain text or markdown
                     text = await readFileAsText(file);
                 }
                 
                 if (text.trim()) {
-                    // Send to AI for analysis and extraction
                     uploadStatus.innerHTML = '<div class="loading"><div class="loading-spinner"></div>Analyzing with AI...</div>';
                     await analyzeWithAI(text, file.name);
                 } else {
@@ -378,35 +354,39 @@
             return result.value;
         }
         
+        // Enhanced AI analysis that extracts and fills in the form
         async function analyzeWithAI(content, filename) {
             const uploadStatus = document.getElementById('uploadStatus');
             
-            // Build a prompt to extract task details
-            const prompt = `Analyze the following document and extract the academic task information.
+            // More comprehensive prompt that extracts all relevant details
+            const prompt = `Analyze the following academic document and extract ALL relevant task information.
 
 Document: ${filename}
 
 Content:
-${content.substring(0, 3000)}
+${content.substring(0, 4000)}
 
-Provide a JSON response with the following structure:
+Your job is to extract and fill in task details. Look for:
+1. **Activity Name**: What is this activity called? (e.g., "Math Homework 5", "English Essay", "Science Lab Report")
+2. **Subject**: What subject is this for? (e.g., Mathematics, Biology, History)
+3. **Activity Type**: What kind of activity is it? (homework, essay, quiz, exam, lab, project, reading, assignment, worksheet)
+4. **Due Date**: When is it due? Look for dates in ANY format (March 15, 03/15, 15th March, next Monday, etc.)
+5. **Description**: What needs to be done? Summarize the key instructions in 1-2 sentences.
+6. **Pages/Chapters**: Any specific pages to read or chapters to cover?
+
+Provide a JSON response with:
 {
-    "title": "Extracted task title or activity name",
-    "description": "Brief description of what needs to be done",
-    "due_date": "YYYY-MM-DD format (if found in document, otherwise null)",
-    "activity_type": "exam, homework, quiz, project, assignment, reading, or other",
-    "priority": "high, medium, or low",
-    "complexity": 1-10,
+    "title": "Complete activity name with subject (e.g., 'Math Chapter 5 Homework')",
+    "activity_type": "homework/essay/quiz/exam/lab/project/reading/assignment/other",
+    "due_date": "YYYY-MM-DD format (if found, otherwise null)",
+    "description": "Brief 1-2 sentence summary of what to do",
+    "pages": "pages/chapters mentioned (if any)",
+    "priority": "high/medium/low (based on proximity to deadline and type)",
+    "complexity": 1-10 (exam=8, project=6, essay=5, homework=4, quiz=3, reading=2)",
     "study_tips": "Brief study tips for this type of activity"
 }
 
-Look for:
-- Assignment/homework/exam names
-- Due dates (any format like "due March 15", "due 03/15/2024", "deadline: March 15th")
-- Activity types (exam, quiz, homework, project, etc.)
-- Page numbers or chapters to read
-
-Respond ONLY with valid JSON.`;
+Respond ONLY with valid JSON, no other text.`;
 
             try {
                 const response = await fetch('../api/analyze-text.php', {
@@ -418,38 +398,43 @@ Respond ONLY with valid JSON.`;
                 const data = await response.json();
                 
                 if (data.success && data.analysis) {
-                    const analysis = data.analysis;
+                    const a = data.analysis;
                     
-                    // Auto-fill form fields
-                    if (analysis.title) {
-                        document.getElementById('taskTitle').value = analysis.title;
+                    // Auto-fill form fields with extracted data
+                    if (a.title) {
+                        document.getElementById('taskTitle').value = a.title;
                     }
-                    if (analysis.description) {
-                        document.getElementById('taskDescription').value = analysis.description;
+                    if (a.description) {
+                        // Add pages info to description if available
+                        let desc = a.description;
+                        if (a.pages) {
+                            desc += '\n\nPages/Chapters: ' + a.pages;
+                        }
+                        document.getElementById('taskDescription').value = desc;
                     }
-                    if (analysis.due_date) {
-                        document.getElementById('taskDueDate').value = analysis.due_date;
+                    if (a.due_date) {
+                        document.getElementById('taskDueDate').value = a.due_date;
                     }
                     
                     // Show AI analysis results
                     document.getElementById('analysisResult').style.display = 'block';
-                    document.getElementById('resultPriority').textContent = (analysis.priority || 'medium').toUpperCase();
-                    document.getElementById('resultPriority').style.color = 
-                        analysis.priority === 'high' ? '#dc3545' : 
-                        analysis.priority === 'medium' ? '#ffc107' : '#28a745';
-                    document.getElementById('resultComplexity').textContent = (analysis.complexity || 5) + '/10';
-                    document.getElementById('resultHours').textContent = Math.ceil((analysis.complexity || 5) * 0.8) + ' hours';
-                    document.getElementById('resultTips').textContent = analysis.study_tips || 'Break this task into smaller chunks.';
+                    document.getElementById('resultType').textContent = (a.activity_type || 'other').toUpperCase();
                     
-                    uploadStatus.innerHTML = '<span style="color: #28a745;">✓ Document analyzed successfully! Check the form above.</span>';
+                    const priority = a.priority || 'medium';
+                    document.getElementById('resultPriority').textContent = priority.toUpperCase();
+                    document.getElementById('resultPriority').style.color = 
+                        priority === 'high' ? '#dc3545' : 
+                        priority === 'medium' ? '#ffc107' : '#28a745';
+                    
+                    document.getElementById('resultComplexity').textContent = (a.complexity || 5) + '/10';
+                    document.getElementById('resultTips').textContent = a.study_tips || 'Break this task into smaller chunks.';
+                    
+                    uploadStatus.innerHTML = '<span style="color: #28a745;">✓ Document analyzed! Check the form above.</span>';
                 } else {
-                    // Fallback: just use the content as description
-                    document.getElementById('taskDescription').value = content.substring(0, 1000);
                     uploadStatus.innerHTML = '<span style="color: #ffc107;">⚠ Could not fully analyze. Please fill in details manually.</span>';
                 }
             } catch (error) {
                 console.error('AI analysis error:', error);
-                document.getElementById('taskDescription').value = content.substring(0, 1000);
                 uploadStatus.innerHTML = '<span style="color: #ffc107;">⚠ Error analyzing. Please fill in details manually.</span>';
             }
         }
@@ -471,7 +456,9 @@ Respond ONLY with valid JSON.`;
             if (titleLower.includes('exam') || titleLower.includes('final') || titleLower.includes('midterm')) complexity = 8;
             else if (titleLower.includes('quiz')) complexity = 5;
             else if (titleLower.includes('homework') || titleLower.includes('hw')) complexity = 4;
-            else if (titleLower.includes('project') || titleLower.includes('paper')) complexity = 6;
+            else if (titleLower.includes('project') || titleLower.includes('paper') || titleLower.includes('essay')) complexity = 6;
+            else if (titleLower.includes('lab')) complexity = 5;
+            else if (titleLower.includes('reading')) complexity = 2;
             
             complexity += wordCount > 500 ? 2 : wordCount > 200 ? 1 : 0;
             complexity = Math.min(10, complexity);
@@ -501,38 +488,21 @@ Respond ONLY with valid JSON.`;
             tasks.push(task);
             localStorage.setItem('dailybrew_tasks_' + user.id, JSON.stringify(tasks));
             
-            // Generate study blocks with enhanced logic
+            // Generate study blocks
             await generateStudyBlocks(task);
-            
-            // Show analysis
-            document.getElementById('analysisResult').style.display = 'block';
-            document.getElementById('resultPriority').textContent = priority.toUpperCase();
-            document.getElementById('resultPriority').style.color = 
-                priority === 'high' ? '#dc3545' : priority === 'medium' ? '#ffc107' : '#28a745';
-            document.getElementById('resultComplexity').textContent = complexity + '/10';
-            document.getElementById('resultHours').textContent = Math.ceil(complexity * 0.8) + ' hours';
-            document.getElementById('resultTips').textContent = getTips(priority, complexity);
             
             alert('Task created successfully! 🎉\n\nAI Priority: ' + priority.toUpperCase() + '\nComplexity: ' + complexity + '/10');
             
             // Reset form
             document.getElementById('taskForm').reset();
+            document.getElementById('analysisResult').style.display = 'none';
+            document.getElementById('uploadStatus').textContent = '';
         });
         
-        function getTips(priority, complexity) {
-            if (priority === 'high') {
-                return 'Start immediately! Focus on this task first and break it into smaller chunks.';
-            } else if (complexity > 6) {
-                return 'This is a complex task. Start early and review materials multiple times.';
-            } else {
-                return 'Good timing. Review the material and complete at a steady pace.';
-            }
-        }
-        
-        // Enhanced study block generation with collision detection
+        // Enhanced study block generation
         async function generateStudyBlocks(task) {
             const blocks = JSON.parse(localStorage.getItem('dailybrew_blocks_' + user.id) || '[]');
-            const preferences = JSON.parse(localStorage.getItem('dailybrew_preferences_' + user.id) || getDefaultPreferences());
+            const preferences = loadPreferences();
             const schedule = JSON.parse(localStorage.getItem('dailybrew_schedule_' + user.id) || '[]');
             const sleepSchedule = preferences.sleep_schedule || { start: '22:00', end: '08:00' };
             
@@ -544,24 +514,20 @@ Respond ONLY with valid JSON.`;
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             
-            // Calculate date range based on profile
             let startDate = new Date(today);
             let endDate = new Date(dueDate);
             endDate.setDate(endDate.getDate() - 1);
             
             if (task.profile === 'early_crammer') {
-                // Early Crammer: Schedule from today until day before deadline
                 endDate = new Date(dueDate);
                 endDate.setDate(endDate.getDate() - 1);
             } else if (task.profile === 'late_crammer') {
-                // Late Crammer: Schedule from 3 days before deadline until day before
                 startDate = new Date(dueDate);
                 startDate.setDate(startDate.getDate() - 3);
                 if (startDate < today) startDate = today;
                 endDate = new Date(dueDate);
                 endDate.setDate(endDate.getDate() - 1);
             } else {
-                // Seamless: Schedule from today until 2 days before deadline
                 endDate = new Date(dueDate);
                 endDate.setDate(endDate.getDate() - 2);
             }
@@ -581,9 +547,8 @@ Respond ONLY with valid JSON.`;
                     const blockStart = `${hour.toString().padStart(2, '0')}:00`;
                     const blockEnd = `${Math.min(hour + hoursPerBlock, endHour).toString().padStart(2, '0')}:00`;
                     
-                    // Check for collisions
                     if (!isSlotAvailable(dateStr, blockStart, blockEnd, schedule, blocks, sleepSchedule)) {
-                        continue; // Try next slot
+                        continue;
                     }
                     
                     blocks.push({
@@ -606,32 +571,37 @@ Respond ONLY with valid JSON.`;
             localStorage.setItem('dailybrew_blocks_' + user.id, JSON.stringify(blocks));
         }
         
-        function getDefaultPreferences() {
-            return JSON.stringify({
+        function loadPreferences() {
+            try {
+                const prefs = localStorage.getItem('dailybrew_preferences_' + user.id);
+                if (prefs) {
+                    return JSON.parse(prefs);
+                }
+            } catch (e) {
+                console.error('Error loading preferences:', e);
+            }
+            return {
                 earliest_time_start: '08:00',
                 latest_time_end: '22:00',
                 study_block_duration: 30,
                 default_profile: 'seamless',
                 sleep_schedule: { start: '22:00', end: '08:00' }
-            });
+            };
         }
         
         function isSlotAvailable(date, startTime, endTime, schedule, blocks, sleepSchedule) {
             const start = timeToMinutes(startTime);
             const end = timeToMinutes(endTime);
             
-            // Check sleep schedule
             const sleepStart = timeToMinutes(sleepSchedule.start);
             const sleepEnd = timeToMinutes(sleepSchedule.end);
             
             if (sleepStart > sleepEnd) {
-                // Sleep crosses midnight
                 if (start >= sleepStart || end <= sleepEnd) return false;
             } else {
                 if (start >= sleepStart && end <= sleepEnd) return false;
             }
             
-            // Check class schedule
             const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
             for (const cls of schedule) {
                 if (cls.dayOfWeek === dayOfWeek) {
@@ -641,7 +611,6 @@ Respond ONLY with valid JSON.`;
                 }
             }
             
-            // Check existing study blocks
             for (const block of blocks) {
                 if (block.scheduledDate === date) {
                     const blockStart = timeToMinutes(block.startTime);
@@ -656,43 +625,6 @@ Respond ONLY with valid JSON.`;
         function timeToMinutes(time) {
             const [h, m] = time.split(':').map(Number);
             return h * 60 + m;
-        }
-        
-        // Chat functionality
-        document.getElementById('chatInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
-        
-        function sendMessage() {
-            const input = document.getElementById('chatInput');
-            const message = input.value.trim();
-            if (!message) return;
-            
-            const messagesDiv = document.getElementById('chatMessages');
-            messagesDiv.innerHTML += `<div class="chat-message user">${message}</div>`;
-            input.value = '';
-            
-            setTimeout(() => {
-                const response = getAIResponse(message);
-                messagesDiv.innerHTML += `<div class="chat-message ai">${response}</div>`;
-                messagesDiv.scrollTop = messagesDiv.scrollHeight;
-            }, 500);
-        }
-        
-        function getAIResponse(message) {
-            const msg = message.toLowerCase();
-            
-            if (msg.includes('help')) {
-                return "I can help you analyze tasks, suggest study schedules, and answer questions. Upload a document or fill in the task form, and I'll analyze it for you!";
-            } else if (msg.includes('priorit')) {
-                return "Check your Dashboard - it shows tasks due today and tomorrow. The AI assigns priorities based on deadline proximity and complexity.";
-            } else if (msg.includes('schedule') || msg.includes('study')) {
-                return "Three profiles: Early Crammer (finish ASAP), Seamless (balanced), Late Crammer (close to deadline). Set your preference when creating a task!";
-            } else if (msg.includes('deadline') || msg.includes('due')) {
-                return "Your Dashboard shows due today and tomorrow tasks. The Calendar gives you the full picture of all deadlines.";
-            } else {
-                return "That's a great question! Would you like me to help you analyze a task or plan your study schedule?";
-            }
         }
     </script>
 </body>

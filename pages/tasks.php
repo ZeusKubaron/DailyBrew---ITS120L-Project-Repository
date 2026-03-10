@@ -134,7 +134,7 @@
                 <li><a href="dashboard.php"><span>🏠</span> Dashboard</a></li>
                 <li><a href="calendar.php"><span>📅</span> Calendar</a></li>
                 <li><a href="tasks.php" class="active"><span>📝</span> Tasks</a></li>
-                <li><a href="document-analyzer.php"><span>📝</span> Add Task</a></li>
+                <li><a href="document-analyzer.php"><span>📄</span> Add Task</a></li>
                 <li><a href="schedule.php"><span>📚</span> Schedule</a></li>
                 <li><a href="settings.php"><span>⚙️</span> Settings</a></li>
             </ul>
@@ -284,7 +284,7 @@
             tasks.push(task);
             localStorage.setItem('dailybrew_tasks_' + user.id, JSON.stringify(tasks));
             
-            // Generate study blocks with enhanced logic
+            // Generate study blocks
             generateStudyBlocks(task);
             
             renderTasks();
@@ -292,10 +292,10 @@
             alert(`Task added! AI Priority: ${aiPriority.toUpperCase()}, Complexity: ${complexity}/10`);
         });
         
-        // Enhanced study block generation with collision detection
+        // Enhanced study block generation
         function generateStudyBlocks(task) {
             const blocks = JSON.parse(localStorage.getItem('dailybrew_blocks_' + user.id) || '[]');
-            const preferences = JSON.parse(localStorage.getItem('dailybrew_preferences_' + user.id) || getDefaultPreferences());
+            const preferences = loadPreferences();
             const schedule = JSON.parse(localStorage.getItem('dailybrew_schedule_' + user.id) || '[]');
             const sleepSchedule = preferences.sleep_schedule || { start: '22:00', end: '08:00' };
             
@@ -307,24 +307,20 @@
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             
-            // Calculate date range based on profile
             let startDate = new Date(today);
             let endDate = new Date(dueDate);
             endDate.setDate(endDate.getDate() - 1);
             
             if (task.profile === 'early_crammer') {
-                // Early Crammer: Schedule from today until day before deadline
                 endDate = new Date(dueDate);
                 endDate.setDate(endDate.getDate() - 1);
             } else if (task.profile === 'late_crammer') {
-                // Late Crammer: Schedule from 3 days before deadline until day before
                 startDate = new Date(dueDate);
                 startDate.setDate(startDate.getDate() - 3);
                 if (startDate < today) startDate = today;
                 endDate = new Date(dueDate);
                 endDate.setDate(endDate.getDate() - 1);
             } else {
-                // Seamless: Schedule from today until 2 days before deadline
                 endDate = new Date(dueDate);
                 endDate.setDate(endDate.getDate() - 2);
             }
@@ -344,9 +340,8 @@
                     const blockStart = `${hour.toString().padStart(2, '0')}:00`;
                     const blockEnd = `${Math.min(hour + hoursPerBlock, endHour).toString().padStart(2, '0')}:00`;
                     
-                    // Check for collisions
                     if (!isSlotAvailable(dateStr, blockStart, blockEnd, schedule, blocks, sleepSchedule)) {
-                        continue; // Try next slot
+                        continue;
                     }
                     
                     blocks.push({
@@ -369,32 +364,37 @@
             localStorage.setItem('dailybrew_blocks_' + user.id, JSON.stringify(blocks));
         }
         
-        function getDefaultPreferences() {
-            return JSON.stringify({
+        function loadPreferences() {
+            try {
+                const prefs = localStorage.getItem('dailybrew_preferences_' + user.id);
+                if (prefs) {
+                    return JSON.parse(prefs);
+                }
+            } catch (e) {
+                console.error('Error loading preferences:', e);
+            }
+            return {
                 earliest_time_start: '08:00',
                 latest_time_end: '22:00',
                 study_block_duration: 30,
                 default_profile: 'seamless',
                 sleep_schedule: { start: '22:00', end: '08:00' }
-            });
+            };
         }
         
         function isSlotAvailable(date, startTime, endTime, schedule, blocks, sleepSchedule) {
             const start = timeToMinutes(startTime);
             const end = timeToMinutes(endTime);
             
-            // Check sleep schedule
             const sleepStart = timeToMinutes(sleepSchedule.start);
             const sleepEnd = timeToMinutes(sleepSchedule.end);
             
             if (sleepStart > sleepEnd) {
-                // Sleep crosses midnight
                 if (start >= sleepStart || end <= sleepEnd) return false;
             } else {
                 if (start >= sleepStart && end <= sleepEnd) return false;
             }
             
-            // Check class schedule
             const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
             for (const cls of schedule) {
                 if (cls.dayOfWeek === dayOfWeek) {
@@ -404,7 +404,6 @@
                 }
             }
             
-            // Check existing study blocks
             for (const block of blocks) {
                 if (block.scheduledDate === date) {
                     const blockStart = timeToMinutes(block.startTime);
@@ -447,7 +446,6 @@
             tasks = tasks.map(t => t.id === taskId ? {...t, status: 'completed'} : t);
             localStorage.setItem('dailybrew_tasks_' + user.id, JSON.stringify(tasks));
             
-            // Remove associated study blocks when task is completed
             let blocks = JSON.parse(localStorage.getItem('dailybrew_blocks_' + user.id) || '[]');
             blocks = blocks.filter(b => b.taskId !== taskId);
             localStorage.setItem('dailybrew_blocks_' + user.id, JSON.stringify(blocks));
@@ -460,7 +458,6 @@
                 tasks = tasks.filter(t => t.id !== taskId);
                 localStorage.setItem('dailybrew_tasks_' + user.id, JSON.stringify(tasks));
                 
-                // Also delete associated study blocks
                 let blocks = JSON.parse(localStorage.getItem('dailybrew_blocks_' + user.id) || '[]');
                 blocks = blocks.filter(b => b.taskId !== taskId);
                 localStorage.setItem('dailybrew_blocks_' + user.id, JSON.stringify(blocks));

@@ -145,7 +145,7 @@
                 <li><a href="dashboard.php"><span>🏠</span> Dashboard</a></li>
                 <li><a href="calendar.php"><span>📅</span> Calendar</a></li>
                 <li><a href="tasks.php"><span>📝</span> Tasks</a></li>
-                <li><a href="document-analyzer.php"><span>📝</span> Add Task</a></li>
+                <li><a href="document-analyzer.php"><span>📄</span> Add Task</a></li>
                 <li><a href="schedule.php"><span>📚</span> Schedule</a></li>
                 <li><a href="settings.php" class="active"><span>⚙️</span> Settings</a></li>
             </ul>
@@ -201,7 +201,7 @@
                     <label>Default Study Block Duration</label>
                     <select id="blockDuration">
                         <option value="15">15 minutes</option>
-                        <option value="30" selected>30 minutes</option>
+                        <option value="30">30 minutes</option>
                         <option value="45">45 minutes</option>
                         <option value="60">1 hour</option>
                         <option value="90">1.5 hours</option>
@@ -267,9 +267,26 @@
             window.location.href = '../auth/login.php';
         }
         
-        // Load preferences
-        let preferences = JSON.parse(localStorage.getItem('dailybrew_preferences_' + user.id) || getDefaultPreferences());
+        // Load preferences with proper defaults
+        let preferences = {
+            earliest_time_start: '08:00',
+            latest_time_end: '22:00',
+            study_block_duration: 30,
+            default_profile: 'seamless',
+            sleep_schedule: { start: '22:00', end: '08:00' }
+        };
         
+        try {
+            const prefsStr = localStorage.getItem('dailybrew_preferences_' + user.id);
+            if (prefsStr) {
+                const loaded = JSON.parse(prefsStr);
+                preferences = { ...preferences, ...loaded };
+            }
+        } catch (e) {
+            console.log('Using default preferences');
+        }
+        
+        // Populate form with loaded preferences
         document.getElementById('earliestTime').value = preferences.earliest_time_start;
         document.getElementById('latestTime').value = preferences.latest_time_end;
         document.getElementById('blockDuration').value = preferences.study_block_duration;
@@ -293,20 +310,10 @@
             element.classList.add('selected');
         }
         
-        function getDefaultPreferences() {
-            return {
-                earliest_time_start: '08:00',
-                latest_time_end: '22:00',
-                study_block_duration: 30,
-                default_profile: 'seamless',
-                sleep_schedule: { start: '22:00', end: '08:00' }
-            };
-        }
-        
         function saveSettings() {
             const selectedProfile = document.querySelector('.profile-option.selected');
             
-            preferences = {
+            const newPreferences = {
                 earliest_time_start: document.getElementById('earliestTime').value,
                 latest_time_end: document.getElementById('latestTime').value,
                 study_block_duration: parseInt(document.getElementById('blockDuration').value),
@@ -317,8 +324,16 @@
                 }
             };
             
-            localStorage.setItem('dailybrew_preferences_' + user.id, JSON.stringify(preferences));
-            alert('Settings saved successfully! 🎉\n\nYour sleep schedule and study preferences have been updated.');
+            // Save to localStorage
+            localStorage.setItem('dailybrew_preferences_' + user.id, JSON.stringify(newPreferences));
+            
+            // Verify it saved
+            const verify = localStorage.getItem('dailybrew_preferences_' + user.id);
+            if (verify) {
+                alert('Settings saved successfully! 🎉\n\nYour sleep schedule and study preferences have been updated.');
+            } else {
+                alert('Error saving settings. Please try again.');
+            }
         }
     </script>
 </body>
