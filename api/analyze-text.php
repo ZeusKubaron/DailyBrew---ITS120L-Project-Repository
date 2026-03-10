@@ -89,18 +89,25 @@ function tryAIAnalysis($prompt) {
     $apiKey = 'AIzaSyDPWNWnNVBoX-FRq9qZbHOQe17wgf2OafM';
     $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' . $apiKey;
     
-    $systemPrompt = "You are a helpful AI assistant for students. Analyze the following academic task document and extract key information. Return ONLY a JSON object with these fields:
+    $systemPrompt = "You are an AI assistant for students. Analyze the following academic task document and extract key information.
+
+CRITICAL: You MUST find and extract any due date/deadline mentioned in the document. Look for:
+- \"due\", \"deadline\", \"submit\", \"due date\", \"submission date\"
+- Dates in any format: March 15, 3/15, 15th March, March 15th, 2024-03-15, etc.
+
+Return ONLY this exact JSON structure:
 {
-    \"title\": \"A short descriptive title for the task\",
-    \"description\": \"A brief 1-2 sentence summary of the main requirements\",
-    \"due_date\": \"The due date in YYYY-MM-DD format if found, otherwise null\",
+    \"title\": \"A short descriptive title (include subject if mentioned)\",
+    \"description\": \"A brief 1-2 sentence summary\",
+    \"due_date\": \"YYYY-MM-DD format (e.g., 2024-03-15). THIS IS CRITICAL - find the date!\",
     \"activity_type\": \"homework, quiz, exam, project, essay, lab, reading, or other\",
-    \"priority\": \"high, medium, or low based on urgency\",
-    \"complexity\": 1-10 estimate based on difficulty keywords,
-    \"study_tips\": \"A brief study tip for this type of task\"
+    \"priority\": \"high, medium, or low\",
+    \"complexity\": 1-10,
+    \"study_tips\": \"A brief study tip\"
 }
 
-Only respond with JSON, no other text.";
+If no date is found in the document, use null for due_date.
+Respond with ONLY valid JSON, nothing else.";
 
     $postData = json_encode([
         'contents' => [
@@ -173,13 +180,36 @@ function localAnalysis($text) {
         }
     }
     
-    // Extract date if mentioned
+    // Extract date - try multiple formats
     $dueDate = null;
+    
+    // Format: 2024-03-15 or 2024/03/15
     if (preg_match('/(\d{4})[\-\/](\d{1,2})[\-\/](\d{1,2})/', $text, $m)) {
         $dueDate = sprintf('%04d-%02d-%02d', $m[1], $m[2], $m[3]);
-    } elseif (preg_match('/(\d{1,2})[\-\/](\d{1,2})[\-\/](\d{2,4})/', $text, $m)) {
-        $year = strlen($m[3]) === 2 ? '20' . $m[3] : $m[3];
+    }
+    // Format: 03/15/2024 or 3/15/24
+    elseif (preg_match('/(\d{1,2})[\-\/](\d{1,2})[\-\/](\d{2,4})/', $text, $m)) {
+        $year = strlen($m[3]) === 2 ? (intval($m[3]) < 50 ? '20' : '19') . $m[3] : $m[3];
         $dueDate = sprintf('%04d-%02d-%02d', $year, $m[1], $m[2]);
+    }
+    // Format: March 15 or March 15th
+    elseif (preg_match('/(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2})(st|nd|rd|th)?/i', $text, $m)) {
+        $monthNum = date('m', strtotime($m[1] . ' 1'));
+        $dueDate = date('Y') . '-' . $monthNum . '-' . str_pad($m[2], 2, '0', STR_PAD_LEFT);
+    }
+    // Format: 15th March or 15 March
+    elseif (preg_match('/(\d{1,2})(st|nd|rd|th)?\s+(january|february|march|april|may|june|july|august|september|october|november|december)/i', $text, $m)) {
+        $monthNum = date('m', strtotime($m[3] . ' 1'));
+        $dueDate = date('Y') . '-' . $monthNum . '-' . str_pad($m[1], 2, '0', STR_PAD_LEFT);
+    }
+    // Look for "due" or "deadline" keywords
+    elseif (preg_match('/due[:\s]+(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2})/i', $text, $m)) {
+        $monthNum = date('m', strtotime($m[1] . ' 1'));
+        $dueDate = date('Y') . '-' . $monthNum . '-' . str_pad($m[2], 2, '0', STR_PAD_LEFT);
+    }
+    elseif (preg_match('/deadline[:\s]+(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2})/i', $text, $m)) {
+        $monthNum = date('m', strtotime($m[1] . ' 1'));
+        $dueDate = date('Y') . '-' . $monthNum . '-' . str_pad($m[2], 2, '0', STR_PAD_LEFT);
     }
     
     // Calculate complexity
