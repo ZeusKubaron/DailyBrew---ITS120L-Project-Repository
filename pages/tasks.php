@@ -25,16 +25,53 @@
         .sidebar-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.2); margin-bottom: 20px; }
         .logo { font-size: 1.8rem; font-weight: bold; }
         .hamburger { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        
+        /* Floating hamburger when sidebar collapsed */
+        .floating-hamburger {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 15px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .floating-hamburger.visible { display: block; }
+        
         .nav-menu { list-style: none; }
         .nav-menu li { margin-bottom: 5px; }
         .nav-menu a { display: flex; align-items: center; padding: 12px 15px; color: white; text-decoration: none; border-radius: 10px; transition: background 0.2s; }
         .nav-menu a:hover, .nav-menu a.active { background: rgba(255,255,255,0.2); }
         .nav-menu a span { margin-right: 10px; }
         
-        .main-content { flex: 1; margin-left: 260px; padding: 20px; transition: margin-left 0.3s; }
+        .main-content { 
+            flex: 1; 
+            margin-left: 260px; 
+            padding: 20px; 
+            transition: margin-left 0.3s;
+            min-height: 100vh;
+        }
         .main-content.expanded { margin-left: 0; }
         
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        /* Sticky Header */
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 30px;
+            background: #f5f7fa;
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-radius: 10px;
+        }
         .header h1 { color: #333; font-size: 1.8rem; }
         .user-info { display: flex; align-items: center; gap: 15px; }
         .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: #667eea; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; }
@@ -51,7 +88,7 @@
         .btn { padding: 12px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
         
-        .task-list { margin-top: 20px; }
+        .task-list { margin-top: 20px; max-height: 400px; overflow-y: auto; }
         .task-item { display: flex; align-items: center; justify-content: space-between; padding: 15px; border: 1px solid #e0e0e0; border-radius: 10px; margin-bottom: 10px; }
         .task-item.completed { opacity: 0.6; text-decoration: line-through; }
         .task-info h4 { color: #333; margin-bottom: 5px; }
@@ -65,6 +102,15 @@
         .btn-complete { background: #28a745; }
         .btn-delete { background: #dc3545; }
         
+        .profile-info { 
+            background: #e8edff; 
+            padding: 10px 15px; 
+            border-radius: 8px; 
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #333;
+        }
+        
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-260px); }
             .sidebar.active { transform: translateX(0); }
@@ -76,6 +122,9 @@
 </head>
 <body>
     <div class="app-container">
+        <!-- Floating hamburger when sidebar collapsed -->
+        <button class="floating-hamburger" id="floatingHamburger" onclick="toggleSidebar()">☰</button>
+        
         <nav class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <span class="logo">☕ DailyBrew</span>
@@ -85,7 +134,7 @@
                 <li><a href="dashboard.php"><span>🏠</span> Dashboard</a></li>
                 <li><a href="calendar.php"><span>📅</span> Calendar</a></li>
                 <li><a href="tasks.php" class="active"><span>📝</span> Tasks</a></li>
-                <li><a href="document-analyzer.php"><span>📄</span> Document Analyzer</a></li>
+                <li><a href="document-analyzer.php"><span>📝</span> Add Task</a></li>
                 <li><a href="schedule.php"><span>📚</span> Schedule</a></li>
                 <li><a href="settings.php"><span>⚙️</span> Settings</a></li>
             </ul>
@@ -118,13 +167,16 @@
                     <div class="form-group">
                         <label>Study Profile</label>
                         <select id="taskProfile">
-                            <option value="seamless">Seamless (Recommended)</option>
-                            <option value="early_crammer">Early Crammer</option>
-                            <option value="late_crammer">Late Crammer</option>
+                            <option value="seamless">Seamless (Recommended - Balanced)</option>
+                            <option value="early_crammer">Early Crammer - Finish ASAP</option>
+                            <option value="late_crammer">Late Crammer - Study close to deadline</option>
                         </select>
+                        <div class="profile-info" id="profileInfo">
+                            <strong>Seamless:</strong> Spaced out study sessions with breaks between
+                        </div>
                     </div>
                     <div class="form-group" style="grid-column: span 2;">
-                        <button type="submit" class="btn">Add Task with AI Analysis</button>
+                        <button type="submit" class="btn">🤖 Add Task with AI Analysis</button>
                     </div>
                 </form>
             </div>
@@ -146,14 +198,42 @@
         document.getElementById('userAvatar').textContent = user.firstName.charAt(0);
         
         function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('collapsed');
-            document.getElementById('mainContent').classList.toggle('expanded');
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const floatingHamburger = document.getElementById('floatingHamburger');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+            
+            if (sidebar.classList.contains('collapsed')) {
+                floatingHamburger.classList.add('visible');
+            } else {
+                floatingHamburger.classList.remove('visible');
+            }
         }
         
         function logout() {
             localStorage.removeItem('dailybrew_current_user');
             window.location.href = '../auth/login.php';
         }
+        
+        // Profile info display
+        document.getElementById('taskProfile').addEventListener('change', function() {
+            const profile = this.value;
+            let info = '';
+            switch(profile) {
+                case 'seamless':
+                    info = '<strong>Seamless:</strong> Spaced out study sessions with breaks in between (2 days before deadline)';
+                    break;
+                case 'early_crammer':
+                    info = '<strong>Early Crammer:</strong> Schedule study blocks as early as possible to finish ASAP';
+                    break;
+                case 'late_crammer':
+                    info = '<strong>Late Crammer:</strong> Schedule study blocks close to the deadline (last 3 days)';
+                    break;
+            }
+            document.getElementById('profileInfo').innerHTML = info;
+        });
         
         // Load tasks
         let tasks = JSON.parse(localStorage.getItem('dailybrew_tasks_' + user.id) || '[]');
@@ -168,7 +248,7 @@
             const description = document.getElementById('taskDescription').value;
             const profile = document.getElementById('taskProfile').value;
             
-            // AI Analysis - simple priority calculation
+            // AI Analysis
             const wordCount = description ? description.split(/\s+/).length : 0;
             const titleLower = title.toLowerCase();
             
@@ -204,7 +284,7 @@
             tasks.push(task);
             localStorage.setItem('dailybrew_tasks_' + user.id, JSON.stringify(tasks));
             
-            // Generate study blocks
+            // Generate study blocks with enhanced logic
             generateStudyBlocks(task);
             
             renderTasks();
@@ -212,9 +292,12 @@
             alert(`Task added! AI Priority: ${aiPriority.toUpperCase()}, Complexity: ${complexity}/10`);
         });
         
+        // Enhanced study block generation with collision detection
         function generateStudyBlocks(task) {
             const blocks = JSON.parse(localStorage.getItem('dailybrew_blocks_' + user.id) || '[]');
-            const preferences = JSON.parse(localStorage.getItem('dailybrew_preferences_' + user.id) || '{"study_block_duration": 30, "earliest_time_start": "08:00", "latest_time_end": "22:00"}');
+            const preferences = JSON.parse(localStorage.getItem('dailybrew_preferences_' + user.id) || getDefaultPreferences());
+            const schedule = JSON.parse(localStorage.getItem('dailybrew_schedule_' + user.id) || '[]');
+            const sleepSchedule = preferences.sleep_schedule || { start: '22:00', end: '08:00' };
             
             const duration = preferences.study_block_duration || 30;
             const startHour = parseInt((preferences.earliest_time_start || '08:00').split(':')[0]);
@@ -222,20 +305,31 @@
             
             const dueDate = new Date(task.dueDate);
             const today = new Date();
-            const daysUntil = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+            today.setHours(0, 0, 0, 0);
             
+            // Calculate date range based on profile
             let startDate = new Date(today);
             let endDate = new Date(dueDate);
             endDate.setDate(endDate.getDate() - 1);
             
             if (task.profile === 'early_crammer') {
+                // Early Crammer: Schedule from today until day before deadline
                 endDate = new Date(dueDate);
                 endDate.setDate(endDate.getDate() - 1);
             } else if (task.profile === 'late_crammer') {
+                // Late Crammer: Schedule from 3 days before deadline until day before
                 startDate = new Date(dueDate);
                 startDate.setDate(startDate.getDate() - 3);
                 if (startDate < today) startDate = today;
+                endDate = new Date(dueDate);
+                endDate.setDate(endDate.getDate() - 1);
+            } else {
+                // Seamless: Schedule from today until 2 days before deadline
+                endDate = new Date(dueDate);
+                endDate.setDate(endDate.getDate() - 2);
             }
+            
+            if (endDate < startDate) endDate = startDate;
             
             const blockCount = Math.max(1, Math.ceil(task.complexity / 2));
             const hoursPerBlock = Math.ceil(task.complexity / blockCount);
@@ -244,27 +338,87 @@
             let blockIndex = 0;
             
             while (currentDate <= endDate && blockIndex < blockCount) {
+                const dateStr = currentDate.toISOString().split('T')[0];
+                
                 for (let hour = startHour; hour < endHour && blockIndex < blockCount; hour += hoursPerBlock) {
                     const blockStart = `${hour.toString().padStart(2, '0')}:00`;
                     const blockEnd = `${Math.min(hour + hoursPerBlock, endHour).toString().padStart(2, '0')}:00`;
+                    
+                    // Check for collisions
+                    if (!isSlotAvailable(dateStr, blockStart, blockEnd, schedule, blocks, sleepSchedule)) {
+                        continue; // Try next slot
+                    }
                     
                     blocks.push({
                         id: Date.now() + blockIndex,
                         taskId: task.id,
                         title: `Study: ${task.title}`,
-                        scheduledDate: currentDate.toISOString().split('T')[0],
+                        scheduledDate: dateStr,
                         startTime: blockStart,
                         endTime: blockEnd,
                         profile: task.profile
                     });
                     
                     blockIndex++;
-                    currentDate.setDate(currentDate.getDate() + 1);
                     break;
                 }
+                
+                currentDate.setDate(currentDate.getDate() + 1);
             }
             
             localStorage.setItem('dailybrew_blocks_' + user.id, JSON.stringify(blocks));
+        }
+        
+        function getDefaultPreferences() {
+            return JSON.stringify({
+                earliest_time_start: '08:00',
+                latest_time_end: '22:00',
+                study_block_duration: 30,
+                default_profile: 'seamless',
+                sleep_schedule: { start: '22:00', end: '08:00' }
+            });
+        }
+        
+        function isSlotAvailable(date, startTime, endTime, schedule, blocks, sleepSchedule) {
+            const start = timeToMinutes(startTime);
+            const end = timeToMinutes(endTime);
+            
+            // Check sleep schedule
+            const sleepStart = timeToMinutes(sleepSchedule.start);
+            const sleepEnd = timeToMinutes(sleepSchedule.end);
+            
+            if (sleepStart > sleepEnd) {
+                // Sleep crosses midnight
+                if (start >= sleepStart || end <= sleepEnd) return false;
+            } else {
+                if (start >= sleepStart && end <= sleepEnd) return false;
+            }
+            
+            // Check class schedule
+            const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
+            for (const cls of schedule) {
+                if (cls.dayOfWeek === dayOfWeek) {
+                    const clsStart = timeToMinutes(cls.startTime);
+                    const clsEnd = timeToMinutes(cls.endTime);
+                    if (!(end <= clsStart || start >= clsEnd)) return false;
+                }
+            }
+            
+            // Check existing study blocks
+            for (const block of blocks) {
+                if (block.scheduledDate === date) {
+                    const blockStart = timeToMinutes(block.startTime);
+                    const blockEnd = timeToMinutes(block.endTime);
+                    if (!(end <= blockStart || start >= blockEnd)) return false;
+                }
+            }
+            
+            return true;
+        }
+        
+        function timeToMinutes(time) {
+            const [h, m] = time.split(':').map(Number);
+            return h * 60 + m;
         }
         
         function renderTasks() {
@@ -279,7 +433,7 @@
                 <div class="task-item ${task.status === 'completed' ? 'completed' : ''}">
                     <div class="task-info">
                         <h4>${task.title} <span class="priority-badge priority-${task.aiPriority}">${task.aiPriority.toUpperCase()}</span></h4>
-                        <p>Due: ${new Date(task.dueDate).toLocaleDateString()} | Complexity: ${task.complexity}/10</p>
+                        <p>Due: ${new Date(task.dueDate).toLocaleDateString()} | Complexity: ${task.complexity}/10 | Profile: ${task.profile}</p>
                     </div>
                     <div class="task-actions">
                         ${task.status !== 'completed' ? `<button class="btn btn-sm btn-complete" onclick="completeTask(${task.id})">✓</button>` : ''}
@@ -292,13 +446,25 @@
         function completeTask(taskId) {
             tasks = tasks.map(t => t.id === taskId ? {...t, status: 'completed'} : t);
             localStorage.setItem('dailybrew_tasks_' + user.id, JSON.stringify(tasks));
+            
+            // Remove associated study blocks when task is completed
+            let blocks = JSON.parse(localStorage.getItem('dailybrew_blocks_' + user.id) || '[]');
+            blocks = blocks.filter(b => b.taskId !== taskId);
+            localStorage.setItem('dailybrew_blocks_' + user.id, JSON.stringify(blocks));
+            
             renderTasks();
         }
         
         function deleteTask(taskId) {
-            if (confirm('Delete this task?')) {
+            if (confirm('Delete this task? This will also delete all associated study blocks.')) {
                 tasks = tasks.filter(t => t.id !== taskId);
                 localStorage.setItem('dailybrew_tasks_' + user.id, JSON.stringify(tasks));
+                
+                // Also delete associated study blocks
+                let blocks = JSON.parse(localStorage.getItem('dailybrew_blocks_' + user.id) || '[]');
+                blocks = blocks.filter(b => b.taskId !== taskId);
+                localStorage.setItem('dailybrew_blocks_' + user.id, JSON.stringify(blocks));
+                
                 renderTasks();
             }
         }

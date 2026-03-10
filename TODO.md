@@ -1,60 +1,38 @@
-# DailyBrew Implementation TODO
+# TODO - DailyBrew Improvements - COMPLETED ✓
 
-## Phase 1: Foundation
-- [x] 1.1 Create project directory structure
-- [x] 1.2 Database setup script (database.sql)
-- [x] 1.3 Database configuration (config/database.php)
-- [x] 1.4 Gemini API configuration (config/gemini.php)
-- [x] 1.5 Session management (auth/session.php)
+## Phase 1: Document Analyzer Enhancements ✓
+- [x] 1. Add PDF and DOCX support to document-analyzer.php (using PDF.js and Mammoth.js)
+- [x] 2. Merge document analyzer with task creation form (single "Add Task" page)
+- [x] 3. Enhance AI to extract task details from document content
 
-## Phase 2: Authentication Pages
-- [x] 2.1 Login page (pages/login.php)
-- [x] 2.2 Register page (pages/register.php)
-- [x] 2.3 Logout handler (auth/logout.php)
-- [x] 2.4 Login processor (auth/login.php)
-- [x] 2.5 Register processor (auth/register.php)
+## Phase 2: Dashboard & Calendar UI Fixes ✓
+- [x] 4. Fix calendar container overflow with scrollable containers
+- [x] 5. Extend container heights to fill screen properly (flex layout)
+- [x] 6. Lock dashboard calendar to day-only view (agendaDay)
+- [x] 10. Remove "today" button from calendar page
 
-## Phase 3: Dashboard (Main Page After Login)
-- [x] 3.1 Dashboard layout with hamburger menu
-- [x] 3.2 Left side: Daily calendar (half screen)
-- [x] 3.3 Right side: Two containers (due today, due tomorrow)
-- [x] 3.4 Navigation sidebar/menu
-- [x] 3.5 Dashboard PHP handler
+## Phase 3: Study Block Logic ✓
+- [x] 7. Study blocks check for conflicts (classes, other blocks, sleep schedule)
+- [x] 7b. Auto-remove blocks when task is completed/deleted
+- [x] 8. Add sleep schedule settings in settings.php
+- [x] 9. Implement the 3 study profiles correctly:
+  - Early Crammer: Today until day before deadline
+  - Late Crammer: 3 days before deadline until day before
+  - Seamless: Today until 2 days before deadline
 
-## Phase 4: Full Calendar Page
-- [x] 4.1 Calendar page with Day/Week/Month views
-- [x] 4.2 FullCalendar.js integration
-- [x] 4.3 Event display for tasks and study blocks
+## Phase 4: UX Improvements ✓
+- [x] 11. Add floating hamburger when sidebar is collapsed
+- [x] 12. Add long-press to delete study blocks on calendar
+- [x] 13. Make header bar sticky/floating
 
-## Phase 5: Document Analyzer & Task Uploader
-- [x] 5.1 Document analyzer page
-- [x] 5.2 AI-powered task extraction from documents
-- [x] 5.3 Task creation form
-- [x] 5.4 AI task analysis endpoint
+## Files Modified:
+1. pages/document-analyzer.php - Complete rewrite with PDF/DOCX support + merged task form
+2. pages/dashboard.php - Day-only calendar, scrollable containers, sticky header
+3. pages/calendar.php - Removed today button, long-press delete, sleep visualization
+4. pages/tasks.php - Enhanced study block generation with collision detection
+5. pages/settings.php - Added sleep schedule settings
+6. pages/schedule.php - Added floating hamburger, sticky header
+7. api/analyze-text.php - Added document analysis support
 
-## Phase 6: Schedule Modifier
-- [x] 6.1 Academic schedule management page
-- [x] 6.2 Add/Edit/Delete class periods
-- [x] 6.3 Schedule CRUD handlers
-
-## Phase 7: Global Styles & Components
-- [x] 7.1 Main stylesheet (css/style.css)
-- [x] 7.2 Calendar styles (css/calendar.css)
-- [x] 7.3 JavaScript main.js with tour functionality
-
-## Phase 8: API Endpoints
-- [x] 8.1 Gemini chat endpoint (api/gemini-chat.php)
-- [x] 8.2 Schedule task endpoint (api/schedule-task.php)
-- [x] 8.3 Update blocks endpoint (api/update-blocks.php)
-
-## Phase 9: Tour/Guide
-- [x] 9.1 Onboarding tour functionality
-- [x] 9.2 First-time user guide
-
-## Phase 10: Final Testing & Polish
-- [x] 10.1 Error handling
-- [x] 10.2 Bug fixes
-- [x] 10.3 Final verification
-
-## ✅ IMPLEMENTATION COMPLETE
+## All 13 improvements completed!
 

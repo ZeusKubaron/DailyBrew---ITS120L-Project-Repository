@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8 name="viewport"">
+    <meta content="width=device-width, initial-scale=1.0">
     <title>Schedule - DailyBrew</title>
     <link rel="stylesheet" href="../css/style.css">
     <style>
@@ -25,16 +25,53 @@
         .sidebar-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.2); margin-bottom: 20px; }
         .logo { font-size: 1.8rem; font-weight: bold; }
         .hamburger { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        
+        /* Floating hamburger when sidebar collapsed */
+        .floating-hamburger {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 15px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .floating-hamburger.visible { display: block; }
+        
         .nav-menu { list-style: none; }
         .nav-menu li { margin-bottom: 5px; }
         .nav-menu a { display: flex; align-items: center; padding: 12px 15px; color: white; text-decoration: none; border-radius: 10px; transition: background 0.2s; }
         .nav-menu a:hover, .nav-menu a.active { background: rgba(255,255,255,0.2); }
         .nav-menu a span { margin-right: 10px; }
         
-        .main-content { flex: 1; margin-left: 260px; padding: 20px; transition: margin-left 0.3s; }
+        .main-content { 
+            flex: 1; 
+            margin-left: 260px; 
+            padding: 20px; 
+            transition: margin-left 0.3s;
+            min-height: 100vh;
+        }
         .main-content.expanded { margin-left: 0; }
         
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        /* Sticky Header */
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 30px;
+            background: #f5f7fa;
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-radius: 10px;
+        }
         .header h1 { color: #333; font-size: 1.8rem; }
         .user-info { display: flex; align-items: center; gap: 15px; }
         .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: #667eea; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; }
@@ -52,7 +89,7 @@
         .btn { padding: 12px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
         
-        .schedule-list { margin-top: 20px; }
+        .schedule-list { margin-top: 20px; max-height: 400px; overflow-y: auto; }
         .schedule-item { display: flex; align-items: center; justify-content: space-between; padding: 15px; border: 1px solid #e0e0e0; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid; }
         .schedule-item h4 { color: #333; margin-bottom: 5px; }
         .schedule-item p { color: #666; font-size: 0.9rem; }
@@ -74,6 +111,9 @@
 </head>
 <body>
     <div class="app-container">
+        <!-- Floating hamburger when sidebar collapsed -->
+        <button class="floating-hamburger" id="floatingHamburger" onclick="toggleSidebar()">☰</button>
+        
         <nav class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <span class="logo">☕ DailyBrew</span>
@@ -83,7 +123,7 @@
                 <li><a href="dashboard.php"><span>🏠</span> Dashboard</a></li>
                 <li><a href="calendar.php"><span>📅</span> Calendar</a></li>
                 <li><a href="tasks.php"><span>📝</span> Tasks</a></li>
-                <li><a href="document-analyzer.php"><span>📄</span> Document Analyzer</a></li>
+                <li><a href="document-analyzer.php"><span>📝</span> Add Task</a></li>
                 <li><a href="schedule.php" class="active"><span>📚</span> Schedule</a></li>
                 <li><a href="settings.php"><span>⚙️</span> Settings</a></li>
             </ul>
@@ -152,7 +192,7 @@
             
             <div class="card">
                 <h2>📅 Your Weekly Schedule</h2>
-                <div id="scheduleList">
+                <div id="scheduleList" class="schedule-list">
                     <p style="text-align: center; color: #999;">No classes added yet. Add your first class above!</p>
                 </div>
             </div>
@@ -167,8 +207,18 @@
         document.getElementById('userAvatar').textContent = user.firstName.charAt(0);
         
         function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('collapsed');
-            document.getElementById('mainContent').classList.toggle('expanded');
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const floatingHamburger = document.getElementById('floatingHamburger');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+            
+            if (sidebar.classList.contains('collapsed')) {
+                floatingHamburger.classList.add('visible');
+            } else {
+                floatingHamburger.classList.remove('visible');
+            }
         }
         
         function logout() {

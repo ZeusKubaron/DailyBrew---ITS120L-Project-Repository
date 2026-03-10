@@ -25,16 +25,53 @@
         .sidebar-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.2); margin-bottom: 20px; }
         .logo { font-size: 1.8rem; font-weight: bold; }
         .hamburger { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        
+        /* Floating hamburger when sidebar collapsed */
+        .floating-hamburger {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 15px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .floating-hamburger.visible { display: block; }
+        
         .nav-menu { list-style: none; }
         .nav-menu li { margin-bottom: 5px; }
         .nav-menu a { display: flex; align-items: center; padding: 12px 15px; color: white; text-decoration: none; border-radius: 10px; transition: background 0.2s; }
         .nav-menu a:hover, .nav-menu a.active { background: rgba(255,255,255,0.2); }
         .nav-menu a span { margin-right: 10px; }
         
-        .main-content { flex: 1; margin-left: 260px; padding: 20px; transition: margin-left 0.3s; }
+        .main-content { 
+            flex: 1; 
+            margin-left: 260px; 
+            padding: 20px; 
+            transition: margin-left 0.3s;
+            min-height: 100vh;
+        }
         .main-content.expanded { margin-left: 0; }
         
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        /* Sticky Header */
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 30px;
+            background: #f5f7fa;
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-radius: 10px;
+        }
         .header h1 { color: #333; font-size: 1.8rem; }
         .user-info { display: flex; align-items: center; gap: 15px; }
         .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: #667eea; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; }
@@ -69,6 +106,23 @@
         .info-box { background: #e8edff; border-radius: 10px; padding: 15px; margin-top: 20px; }
         .info-box p { color: #333; font-size: 0.9rem; }
         
+        .sleep-visual {
+            background: linear-gradient(90deg, #e9ecef 50%, #667eea 50%);
+            height: 30px;
+            border-radius: 15px;
+            margin-top: 10px;
+            position: relative;
+        }
+        .sleep-label {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8rem;
+            color: #666;
+        }
+        .sleep-label.wake { left: 10px; }
+        .sleep-label.sleep { right: 10px; }
+        
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-260px); }
             .sidebar.active { transform: translateX(0); }
@@ -79,6 +133,9 @@
 </head>
 <body>
     <div class="app-container">
+        <!-- Floating hamburger when sidebar collapsed -->
+        <button class="floating-hamburger" id="floatingHamburger" onclick="toggleSidebar()">☰</button>
+        
         <nav class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <span class="logo">☕ DailyBrew</span>
@@ -88,7 +145,7 @@
                 <li><a href="dashboard.php"><span>🏠</span> Dashboard</a></li>
                 <li><a href="calendar.php"><span>📅</span> Calendar</a></li>
                 <li><a href="tasks.php"><span>📝</span> Tasks</a></li>
-                <li><a href="document-analyzer.php"><span>📄</span> Document Analyzer</a></li>
+                <li><a href="document-analyzer.php"><span>📝</span> Add Task</a></li>
                 <li><a href="schedule.php"><span>📚</span> Schedule</a></li>
                 <li><a href="settings.php" class="active"><span>⚙️</span> Settings</a></li>
             </ul>
@@ -104,7 +161,7 @@
             </div>
             
             <div class="card">
-                <h2>⏰ Time Preferences</h2>
+                <h2>⏰ Study Time Preferences</h2>
                 <div class="form-row">
                     <div class="form-group">
                         <label>Earliest Study Time</label>
@@ -114,6 +171,27 @@
                         <label>Latest Study Time</label>
                         <input type="time" id="latestTime" value="22:00">
                     </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>😴 Sleep Schedule</h2>
+                <p style="color: #666; margin-bottom: 15px; font-size: 0.9rem;">
+                    Set your sleep hours. Study blocks will not be scheduled during this time.
+                </p>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Bedtime (Sleep Start)</label>
+                        <input type="time" id="sleepStart" value="22:00">
+                    </div>
+                    <div class="form-group">
+                        <label>Wake Up Time (Sleep End)</label>
+                        <input type="time" id="sleepEnd" value="08:00">
+                    </div>
+                </div>
+                <div class="sleep-visual">
+                    <span class="sleep-label wake">☀️ Wake</span>
+                    <span class="sleep-label sleep">🌙 Sleep</span>
                 </div>
             </div>
             
@@ -135,15 +213,15 @@
                     <label>Default Study Profile</label>
                     <div class="profile-option selected" data-value="seamless" onclick="selectProfile(this)">
                         <h4>🌊 Seamless</h4>
-                        <p>Distribute study blocks evenly with breaks in between</p>
+                        <p>Distribute study blocks evenly with breaks in between (2 days before deadline)</p>
                     </div>
                     <div class="profile-option" data-value="early_crammer" onclick="selectProfile(this)">
                         <h4>🌅 Early Crammer</h4>
-                        <p>Schedule study blocks as early as possible</p>
+                        <p>Schedule study blocks as early as possible to finish ASAP</p>
                     </div>
                     <div class="profile-option" data-value="late_crammer" onclick="selectProfile(this)">
                         <h4>🌙 Late Crammer</h4>
-                        <p>Schedule study blocks close to the deadline</p>
+                        <p>Schedule study blocks close to the deadline (last 3 days)</p>
                     </div>
                 </div>
             </div>
@@ -151,7 +229,13 @@
             <button class="btn" onclick="saveSettings()">💾 Save Settings</button>
             
             <div class="info-box">
-                <p><strong>💡 Tip:</strong> These settings will be used when the AI creates study blocks for your tasks. You can also set individual profiles for each task.</p>
+                <p><strong>💡 Tips:</strong></p>
+                <ul style="margin-top: 10px; padding-left: 20px;">
+                    <li>Study blocks will not be scheduled during your sleep hours</li>
+                    <li>Blocks also avoid conflicts with your class schedule</li>
+                    <li>You can set individual profiles for each task</li>
+                    <li>Completing or deleting a task removes its study blocks</li>
+                </ul>
             </div>
         </main>
     </div>
@@ -164,8 +248,18 @@
         document.getElementById('userAvatar').textContent = user.firstName.charAt(0);
         
         function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('collapsed');
-            document.getElementById('mainContent').classList.toggle('expanded');
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const floatingHamburger = document.getElementById('floatingHamburger');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+            
+            if (sidebar.classList.contains('collapsed')) {
+                floatingHamburger.classList.add('visible');
+            } else {
+                floatingHamburger.classList.remove('visible');
+            }
         }
         
         function logout() {
@@ -174,11 +268,17 @@
         }
         
         // Load preferences
-        let preferences = JSON.parse(localStorage.getItem('dailybrew_preferences_' + user.id) || '{"earliest_time_start": "08:00", "latest_time_end": "22:00", "study_block_duration": 30, "default_profile": "seamless"}');
+        let preferences = JSON.parse(localStorage.getItem('dailybrew_preferences_' + user.id) || getDefaultPreferences());
         
         document.getElementById('earliestTime').value = preferences.earliest_time_start;
         document.getElementById('latestTime').value = preferences.latest_time_end;
         document.getElementById('blockDuration').value = preferences.study_block_duration;
+        
+        // Load sleep schedule
+        if (preferences.sleep_schedule) {
+            document.getElementById('sleepStart').value = preferences.sleep_schedule.start;
+            document.getElementById('sleepEnd').value = preferences.sleep_schedule.end;
+        }
         
         // Set selected profile
         document.querySelectorAll('.profile-option').forEach(opt => {
@@ -193,6 +293,16 @@
             element.classList.add('selected');
         }
         
+        function getDefaultPreferences() {
+            return {
+                earliest_time_start: '08:00',
+                latest_time_end: '22:00',
+                study_block_duration: 30,
+                default_profile: 'seamless',
+                sleep_schedule: { start: '22:00', end: '08:00' }
+            };
+        }
+        
         function saveSettings() {
             const selectedProfile = document.querySelector('.profile-option.selected');
             
@@ -200,11 +310,15 @@
                 earliest_time_start: document.getElementById('earliestTime').value,
                 latest_time_end: document.getElementById('latestTime').value,
                 study_block_duration: parseInt(document.getElementById('blockDuration').value),
-                default_profile: selectedProfile ? selectedProfile.dataset.value : 'seamless'
+                default_profile: selectedProfile ? selectedProfile.dataset.value : 'seamless',
+                sleep_schedule: {
+                    start: document.getElementById('sleepStart').value,
+                    end: document.getElementById('sleepEnd').value
+                }
             };
             
             localStorage.setItem('dailybrew_preferences_' + user.id, JSON.stringify(preferences));
-            alert('Settings saved successfully! 🎉');
+            alert('Settings saved successfully! 🎉\n\nYour sleep schedule and study preferences have been updated.');
         }
     </script>
 </body>
