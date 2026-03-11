@@ -7,10 +7,11 @@
  * Uses fallback analysis when AI is unavailable
  */
 
-// Disable all error output
-error_reporting(0);
+// Disable all error output to browser, but log to a file
+error_reporting(E_ALL);
 ini_set('display_errors', 0);
-ini_set('log_errors', 0);
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/gemini-debug.log');
 
 // Clear any existing output buffers
 while (ob_get_level()) {
@@ -43,9 +44,6 @@ if (!$data) {
 }
 
 $prompt = $data['prompt'] ?? null;
-$title = $data['title'] ?? '';
-$description = $data['description'] ?? '';
-$dueDate = $data['due_date'] ?? date('Y-m-d');
 
 // Handle document analysis via AI prompt
 if ($prompt) {
@@ -63,13 +61,18 @@ if ($prompt) {
         echo json_encode([
             'success' => true,
             'analysis' => $fallback,
-            'fallback' => true
+            'fallback' => true,
+            'error' => $analysis['error'] ?? 'AI analysis failed'
         ]);
     }
     exit;
 }
 
 // Handle manual task analysis
+$title = $data['title'] ?? '';
+$description = $data['description'] ?? '';
+$dueDate = $data['due_date'] ?? date('Y-m-d');
+
 if (empty($title)) {
     echo json_encode(['success' => false, 'error' => 'Title is required']);
     exit;
@@ -86,36 +89,48 @@ echo json_encode([
 // --- Helper Functions ---
 
 function tryAIAnalysis($prompt) {
+    error_log("tryAIAnalysis CALLED with length=" . strlen($prompt));
     $apiKey = 'AIzaSyDPWNWnNVBoX-FRq9qZbHOQe17wgf2OafM';
-    $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' . $apiKey;
+    $url = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=' . $apiKey;
     
-    $systemPrompt = "You are an AI assistant for students. Analyze the following academic task document and extract key information.
+    // Simpler, more direct prompt
+    // Focused academic prompt, same JSON fields
+$systemPrompt = "You are an academic assistant for college students. The user will send you the FULL TEXT of an assignment or activity document.
 
-CRITICAL: You MUST find and extract any due date/deadline mentioned in the document. Look for:
-- \"due\", \"deadline\", \"submit\", \"due date\", \"submission date\"
-- Dates in any format: March 15, 3/15, 15th March, March 15th, 2024-03-15, etc.
+Your job:
+- Identify ONE main task the STUDENT must do.
+- Ignore any meta-instructions like 'extract task info from this document', filenames, or tool descriptions.
+- Focus ONLY on the actual assignment (what the student writes, answers, reads, or submits).
 
-Return ONLY this exact JSON structure:
+Return ONLY valid JSON with these fields:
+
 {
-    \"title\": \"A short descriptive title (include subject if mentioned)\",
-    \"description\": \"A brief 1-2 sentence summary\",
-    \"due_date\": \"YYYY-MM-DD format (e.g., 2024-03-15). THIS IS CRITICAL - find the date!\",
+    \"title\": \"Short, descriptive task title based on the assignment itself (e.g., 'Personal Narrative College Essay', 'JavaScript Formative Quiz', 'ENG 101 Personal Narrative Essay')\",
     \"activity_type\": \"homework, quiz, exam, project, essay, lab, reading, or other\",
-    \"priority\": \"high, medium, or low\",
-    \"complexity\": 1-10,
-    \"study_tips\": \"A brief study tip\"
+    \"due_date\": \"YYYY-MM-DD format if a due date like 'March 15, 2026' is mentioned, otherwise null\",
+    \"description\": \"1-2 sentence summary of what the student needs to do (for example: required output, topic, and length)\",
+    \"priority\": \"high, medium, or low (high for exams/major projects/near deadlines, low for simple or non-urgent tasks)\",
+    \"complexity\": 1-10 (higher for exams/major projects, lower for simple homework/reading)\",
+    \"study_tips\": \"One short, practical study tip for this kind of task\"
 }
 
-If no date is found in the document, use null for due_date.
-Respond with ONLY valid JSON, nothing else.";
+Important:
+- The title must reflect the assignment itself, not a generic label like 'Homework Task' or just the course code.
+- The description MUST describe the actual assignment (e.g., 'Write a 600–800 word personal narrative essay responding to one of the prompts...'), NOT the tool instructions, filenames, or the literal phrase 'Document content:'.
+- If no clear due date is in the document, set \"due_date\" to null.
+- Always include all fields above with reasonable values.
+- Respond with ONLY a single JSON object, nothing else.";
 
+    
     $postData = json_encode([
         'contents' => [
-            ['role' => 'user', 'parts' => [['text' => $systemPrompt . "\n\nDocument content:\n" . $prompt]]]
+            ['role' => 'user', 'parts' => [['text' => $systemPrompt . "\n\n=== DOCUMENT ===\n" . $prompt]]]
         ],
         'generationConfig' => [
-            'temperature' => 0.7,
-            'maxOutputTokens' => 500
+            'temperature' => 0.3,
+            'maxOutputTokens' => 800,
+            'topP' => 0.8,
+            'topK' => 40
         ]
     ]);
     
@@ -124,29 +139,50 @@ Respond with ONLY valid JSON, nothing else.";
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
     curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
     
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
     curl_close($ch);
+
+    // Log for debugging
+    error_log("API Response Code: " . $httpCode);
+    error_log("cURL Error: " . ($curlError ?: 'none'));
+    error_log("API Response: " . substr((string)$response, 0, 500));
+
     
     if ($httpCode === 200 && $response) {
         $result = json_decode($response, true);
+        
+        // Check for API errors
+        if (isset($result['error'])) {
+            return ['success' => false, 'error' => $result['error']['message'] ?? 'API error'];
+        }
+        
         if (isset($result['candidates'][0]['content']['parts'][0]['text'])) {
             $text = $result['candidates'][0]['content']['parts'][0]['text'];
             
             // Try to extract JSON from response
-            if (preg_match('/\{.*\}/s', $text, $matches)) {
+            // Look for JSON object in the response
+            if (preg_match('/\{[\s\S]*\}/', $text, $matches)) {
                 $json = json_decode($matches[0], true);
                 if ($json && is_array($json)) {
+                    // Validate required fields
+                    if (!isset($json['title']) || empty($json['title'])) {
+                        return ['success' => false, 'error' => 'Invalid response: no title'];
+                    }
                     return ['success' => true, 'data' => $json];
                 }
             }
+            
         }
     }
     
-    return ['success' => false, 'error' => 'AI unavailable'];
+    return ['success' => false, 'error' => 'Failed to get valid response from AI (HTTP ' . $httpCode . ')'];
 }
 
 function localAnalysis($text) {
@@ -170,14 +206,32 @@ function localAnalysis($text) {
         $activityType = 'reading';
     }
     
-    // Detect keywords for title
+    // Detect keywords for title - more specific
     $title = 'Task from Document';
-    $keywords = ['homework', 'assignment', 'project', 'essay', 'paper', 'quiz', 'exam', 'midterm', 'final', 'lab', 'reading', 'chapter'];
-    foreach ($keywords as $kw) {
+    $keywords = [
+        'homework' => 'Homework Task',
+        'assignment' => 'Assignment',
+        'project' => 'Project',
+        'essay' => 'Essay',
+        'paper' => 'Paper',
+        'quiz' => 'Quiz',
+        'exam' => 'Exam',
+        'midterm' => 'Midterm',
+        'final' => 'Final Exam',
+        'lab' => 'Lab Activity',
+        'reading' => 'Reading Assignment',
+        'chapter' => 'Chapter Review'
+    ];
+    foreach ($keywords as $kw => $titleGuess) {
         if (strpos($textLower, $kw) !== false) {
-            $title = ucfirst($kw) . ' Task';
+            $title = $titleGuess;
             break;
         }
+    }
+    
+    // Try to extract subject/course name
+    if (preg_match('/([A-Z]{2,4}\d{3}[A-Z]*|[A-Z]{2,4}\s+\d{3})/i', $text, $matches)) {
+        $title = $matches[1] . ' ' . $title;
     }
     
     // Extract date - try multiple formats
@@ -227,15 +281,18 @@ function localAnalysis($text) {
     if ($complexity >= 7) $priority = 'high';
     elseif ($complexity <= 3) $priority = 'low';
     
-    // Generate description
-    $description = substr($text, 0, 200);
-    if (strlen($text) > 200) $description .= '...';
+    // Generate description - extract first meaningful content
+    $description = substr($text, 0, 300);
+    // Clean up the description
+    $description = preg_replace('/\s+/', ' ', $description);
+    if (strlen($text) > 300) $description .= '...';
     
     // Study tips
     $tips = 'Break this task into smaller chunks and study regularly.';
     if ($activityType === 'exam') $tips = 'Start reviewing early. Focus on key concepts and practice problems.';
     elseif ($activityType === 'project') $tips = 'Break into milestones. Start with research and outline first.';
     elseif ($activityType === 'essay') $tips = 'Start with an outline. Write in sections and review thoroughly.';
+    elseif ($activityType === 'quiz') $tips = 'Review class notes and key concepts before the quiz.';
     
     return [
         'title' => $title,

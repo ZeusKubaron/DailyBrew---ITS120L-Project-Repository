@@ -130,6 +130,20 @@
             .sidebar.active { transform: translateX(0); }
             .main-content { margin-left: 0; }
         }
+        
+        /* Debug panel */
+        #debugPanel {
+            display: none;
+            background: #1e1e1e;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
@@ -175,6 +189,9 @@
                 </div>
                 
                 <div id="uploadStatus" style="margin-top: 10px; text-align: center; color: #667eea;"></div>
+                
+                <!-- Debug panel -->
+                <div id="debugPanel"></div>
             </div>
             
             <div class="card">
@@ -232,6 +249,7 @@
         </main>
     </div>
 
+
     <script>
         // Initialize PDF.js worker
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -260,6 +278,14 @@
         function logout() {
             localStorage.removeItem('dailybrew_current_user');
             window.location.href = '../auth/login.php';
+        }
+        
+        // Debug logging
+        function debugLog(msg) {
+            const panel = document.getElementById('debugPanel');
+            panel.style.display = 'block';
+            panel.innerHTML += '<div>' + msg + '</div>';
+            console.log('[DOC ANALYZER]', msg);
         }
         
         // File upload handling
@@ -291,35 +317,43 @@
         
         async function handleFile(file) {
             const uploadStatus = document.getElementById('uploadStatus');
-            const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'text/markdown'];
             const extension = file.name.split('.').pop().toLowerCase();
             
-            if (!validTypes.includes(file.type) && !['pdf', 'docx', 'doc', 'txt', 'md'].includes(extension)) {
+            const validExtensions = ['pdf', 'docx', 'doc', 'txt', 'md'];
+            if (!validExtensions.includes(extension)) {
                 alert('Unsupported file type. Please upload PDF, DOCX, TXT, or MD files.');
                 return;
             }
             
             uploadStatus.innerHTML = '<div class="loading"><div class="loading-spinner"></div>Processing document...</div>';
+            debugLog('Starting file processing: ' + file.name + ' (' + extension + ')');
             
             try {
                 let text = '';
                 
                 if (extension === 'pdf') {
+                    debugLog('Extracting text from PDF...');
                     text = await extractTextFromPDF(file);
                 } else if (extension === 'docx' || extension === 'doc') {
+                    debugLog('Extracting text from DOCX...');
                     text = await extractTextFromDOCX(file);
                 } else {
+                    debugLog('Reading text file...');
                     text = await readFileAsText(file);
                 }
                 
-                if (text.trim()) {
+                debugLog('Extracted text length: ' + text.length + ' chars');
+                
+                if (text.trim() && text.trim().length > 10) {
                     uploadStatus.innerHTML = '<div class="loading"><div class="loading-spinner"></div>Analyzing with AI...</div>';
                     await analyzeWithAI(text, file.name);
                 } else {
-                    uploadStatus.textContent = 'Could not extract text from this file.';
+                    debugLog('ERROR: Could not extract meaningful text from file');
+                    uploadStatus.textContent = 'Could not extract text from this file. Try a different format.';
                 }
             } catch (error) {
                 console.error('Error processing file:', error);
+                debugLog('ERROR: ' + error.message);
                 uploadStatus.textContent = 'Error processing file: ' + error.message;
             }
         }
@@ -354,40 +388,16 @@
             return result.value;
         }
         
-        // Enhanced AI analysis that extracts and fills in the form
+        // Simplified, more effective AI analysis
         async function analyzeWithAI(content, filename) {
             const uploadStatus = document.getElementById('uploadStatus');
             
-            // More comprehensive prompt that extracts all relevant details
-            const prompt = `Analyze the following academic document and extract ALL relevant task information.
-
-Document: ${filename}
-
-Content:
-${content.substring(0, 4000)}
-
-Your job is to extract and fill in task details. Look for:
-1. **Activity Name**: What is this activity called? (e.g., "Math Homework 5", "English Essay", "Science Lab Report")
-2. **Subject**: What subject is this for? (e.g., Mathematics, Biology, History)
-3. **Activity Type**: What kind of activity is it? (homework, essay, quiz, exam, lab, project, reading, assignment, worksheet)
-4. **Due Date**: When is it due? Look for dates in ANY format (March 15, 03/15, 15th March, next Monday, etc.)
-5. **Description**: What needs to be done? Summarize the key instructions in 1-2 sentences.
-6. **Pages/Chapters**: Any specific pages to read or chapters to cover?
-
-Provide a JSON response with:
-{
-    "title": "Complete activity name with subject (e.g., 'Math Chapter 5 Homework')",
-    "activity_type": "homework/essay/quiz/exam/lab/project/reading/assignment/other",
-    "due_date": "YYYY-MM-DD format (if found, otherwise null)",
-    "description": "Brief 1-2 sentence summary of what to do",
-    "pages": "pages/chapters mentioned (if any)",
-    "priority": "high/medium/low (based on proximity to deadline and type)",
-    "complexity": 1-10 (exam=8, project=6, essay=5, homework=4, quiz=3, reading=2)",
-    "study_tips": "Brief study tips for this type of activity"
-}
-
-Respond ONLY with valid JSON, no other text.`;
-
+            // Frontend just passes document context; backend prompt defines the JSON format
+            const prompt = "Filename: " + filename + "\n\nDocument content:\n" + content;
+            
+            debugLog('Sending to AI analysis...');
+            debugLog('Content preview: ' + content.substring(0, 200) + '...');
+            
             try {
                 const response = await fetch('../api/analyze-text.php', {
                     method: 'POST',
@@ -396,21 +406,18 @@ Respond ONLY with valid JSON, no other text.`;
                 });
                 
                 const data = await response.json();
+                debugLog('API Response: ' + JSON.stringify(data).substring(0, 500));
                 
                 if (data.success && data.analysis) {
                     const a = data.analysis;
+                    debugLog('Parsed analysis: title=' + a.title + ', type=' + a.activity_type);
                     
                     // Auto-fill form fields with extracted data
                     if (a.title) {
                         document.getElementById('taskTitle').value = a.title;
                     }
                     if (a.description) {
-                        // Add pages info to description if available
-                        let desc = a.description;
-                        if (a.pages) {
-                            desc += '\n\nPages/Chapters: ' + a.pages;
-                        }
-                        document.getElementById('taskDescription').value = desc;
+                        document.getElementById('taskDescription').value = a.description;
                     }
                     if (a.due_date) {
                         document.getElementById('taskDueDate').value = a.due_date;
@@ -429,12 +436,18 @@ Respond ONLY with valid JSON, no other text.`;
                     document.getElementById('resultComplexity').textContent = (a.complexity || 5) + '/10';
                     document.getElementById('resultTips').textContent = a.study_tips || 'Break this task into smaller chunks.';
                     
-                    uploadStatus.innerHTML = '<span style="color: #28a745;">✓ Document analyzed! Check the form above.</span>';
+                    if (data.fallback) {
+                        uploadStatus.innerHTML = '<span style="color: #ffc107;">⚠ AI analysis using fallback mode. Results may be limited.</span>';
+                    } else {
+                        uploadStatus.innerHTML = '<span style="color: #28a745;">✓ Document analyzed! Check the form above.</span>';
+                    }
                 } else {
-                    uploadStatus.innerHTML = '<span style="color: #ffc107;">⚠ Could not fully analyze. Please fill in details manually.</span>';
+                    debugLog('ERROR: Analysis failed - ' + (data.error || 'Unknown error'));
+                    uploadStatus.innerHTML = '<span style="color: #ffc107;">⚠ Could not analyze. Please fill in details manually.</span>';
                 }
             } catch (error) {
                 console.error('AI analysis error:', error);
+                debugLog('ERROR: ' + error.message);
                 uploadStatus.innerHTML = '<span style="color: #ffc107;">⚠ Error analyzing. Please fill in details manually.</span>';
             }
         }
@@ -497,6 +510,7 @@ Respond ONLY with valid JSON, no other text.`;
             document.getElementById('taskForm').reset();
             document.getElementById('analysisResult').style.display = 'none';
             document.getElementById('uploadStatus').textContent = '';
+            document.getElementById('debugPanel').style.display = 'none';
         });
         
         // Enhanced study block generation
@@ -629,4 +643,3 @@ Respond ONLY with valid JSON, no other text.`;
     </script>
 </body>
 </html>
-

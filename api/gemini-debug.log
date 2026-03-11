@@ -1,0 +1,208 @@
+[11-Mar-2026 03:03:35 UTC] PHP Deprecated:  Function curl_close() is deprecated since 8.5, as it has no effect since PHP 8.0 in C:\Github Repo\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 147
+[11-Mar-2026 03:03:35 UTC] API Response Code: 0
+[11-Mar-2026 03:03:35 UTC] API Response: 
+[11-Mar-2026 03:07:16 UTC] PHP Deprecated:  Function curl_close() is deprecated since 8.5, as it has no effect since PHP 8.0 in C:\Github Repo\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 147
+[11-Mar-2026 03:07:16 UTC] API Response Code: 0
+[11-Mar-2026 03:07:16 UTC] cURL Error: SSL certificate OpenSSL verify result: unable to get local issuer certificate (20)
+[11-Mar-2026 03:07:16 UTC] API Response: 
+[11-Mar-2026 03:10:57 UTC] PHP Deprecated:  Function curl_close() is deprecated since 8.5, as it has no effect since PHP 8.0 in C:\Github Repo\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 149
+[11-Mar-2026 03:10:57 UTC] API Response Code: 404
+[11-Mar-2026 03:10:57 UTC] cURL Error: none
+[11-Mar-2026 03:10:57 UTC] API Response: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[11-Mar-2026 03:15:27 UTC] PHP Deprecated:  Function curl_close() is deprecated since 8.5, as it has no effect since PHP 8.0 in C:\Github Repo\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 149
+[11-Mar-2026 03:15:27 UTC] API Response Code: 404
+[11-Mar-2026 03:15:27 UTC] cURL Error: none
+[11-Mar-2026 03:15:27 UTC] API Response: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[11-Mar-2026 03:17:55 UTC] PHP Deprecated:  Function curl_close() is deprecated since 8.5, as it has no effect since PHP 8.0 in C:\Github Repo\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 149
+[11-Mar-2026 03:17:55 UTC] API Response Code: 404
+[11-Mar-2026 03:17:55 UTC] cURL Error: none
+[11-Mar-2026 03:17:55 UTC] API Response: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[11-Mar-2026 03:22:36 UTC] tryAIAnalysis CALLED with length=3624
+[11-Mar-2026 03:22:36 UTC] PHP Deprecated:  Function curl_close() is deprecated since 8.5, as it has no effect since PHP 8.0 in C:\Github Repo\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 150
+[11-Mar-2026 03:22:36 UTC] API Response Code: 404
+[11-Mar-2026 03:22:36 UTC] cURL Error: none
+[11-Mar-2026 03:22:36 UTC] API Response: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[11-Mar-2026 03:26:27 UTC] tryAIAnalysis CALLED with length=2105
+[11-Mar-2026 03:26:27 UTC] PHP Deprecated:  Function curl_close() is deprecated since 8.5, as it has no effect since PHP 8.0 in C:\Github Repo\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 150
+[11-Mar-2026 03:26:27 UTC] API Response Code: 404
+[11-Mar-2026 03:26:27 UTC] cURL Error: none
+[11-Mar-2026 03:26:27 UTC] API Response: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[11-Mar-2026 03:32:14 UTC] tryAIAnalysis CALLED with length=3624
+[11-Mar-2026 03:32:14 UTC] PHP Deprecated:  Function curl_close() is deprecated since 8.5, as it has no effect since PHP 8.0 in C:\Github Repo\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 150
+[11-Mar-2026 03:32:14 UTC] API Response Code: 404
+[11-Mar-2026 03:32:14 UTC] cURL Error: none
+[11-Mar-2026 03:32:14 UTC] API Response: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[11-Mar-2026 03:33:22 UTC] tryAIAnalysis CALLED with length=1999
+[11-Mar-2026 03:33:23 UTC] PHP Deprecated:  Function curl_close() is deprecated since 8.5, as it has no effect since PHP 8.0 in C:\Github Repo\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 150
+[11-Mar-2026 03:33:23 UTC] API Response Code: 404
+[11-Mar-2026 03:33:23 UTC] cURL Error: none
+[11-Mar-2026 03:33:23 UTC] API Response: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[11-Mar-2026 03:33:39 UTC] tryAIAnalysis CALLED with length=3624
+[11-Mar-2026 03:33:39 UTC] PHP Deprecated:  Function curl_close() is deprecated since 8.5, as it has no effect since PHP 8.0 in C:\Github Repo\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 150
+[11-Mar-2026 03:33:39 UTC] API Response Code: 404
+[11-Mar-2026 03:33:39 UTC] cURL Error: none
+[11-Mar-2026 03:33:39 UTC] API Response: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[11-Mar-2026 03:37:24 UTC] tryAIAnalysis CALLED with length=2105
+[11-Mar-2026 03:37:24 UTC] PHP Deprecated:  Function curl_close() is deprecated since 8.5, as it has no effect since PHP 8.0 in C:\Github Repo\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 150
+[11-Mar-2026 03:37:24 UTC] API Response Code: 404
+[11-Mar-2026 03:37:24 UTC] cURL Error: none
+[11-Mar-2026 03:37:24 UTC] API Response: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[11-Mar-2026 03:37:51 UTC] tryAIAnalysis CALLED with length=3624
+[11-Mar-2026 03:37:51 UTC] PHP Deprecated:  Function curl_close() is deprecated since 8.5, as it has no effect since PHP 8.0 in C:\Github Repo\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 150
+[11-Mar-2026 03:37:51 UTC] API Response Code: 404
+[11-Mar-2026 03:37:51 UTC] cURL Error: none
+[11-Mar-2026 03:37:51 UTC] API Response: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[11-Mar-2026 03:38:24 UTC] tryAIAnalysis CALLED with length=2105
+[11-Mar-2026 03:38:24 UTC] PHP Deprecated:  Function curl_close() is deprecated since 8.5, as it has no effect since PHP 8.0 in C:\Github Repo\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 150
+[11-Mar-2026 03:38:24 UTC] API Response Code: 404
+[11-Mar-2026 03:38:24 UTC] cURL Error: none
+[11-Mar-2026 03:38:24 UTC] API Response: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[11-Mar-2026 03:43:25 UTC] tryAIAnalysis CALLED with length=3624
+[11-Mar-2026 03:43:25 UTC] PHP Deprecated:  Function curl_close() is deprecated since 8.5, as it has no effect since PHP 8.0 in C:\Github Repo\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 150
+[11-Mar-2026 03:43:25 UTC] API Response Code: 404
+[11-Mar-2026 03:43:25 UTC] cURL Error: none
+[11-Mar-2026 03:43:25 UTC] API Response: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[11-Mar-2026 04:19:58 UTC] tryAIAnalysis CALLED with length=3624
+[11-Mar-2026 04:19:58 UTC] PHP Deprecated:  Function curl_close() is deprecated since 8.5, as it has no effect since PHP 8.0 in C:\Github Repo\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 150
+[11-Mar-2026 04:19:58 UTC] API Response Code: 404
+[11-Mar-2026 04:19:58 UTC] cURL Error: none
+[11-Mar-2026 04:19:58 UTC] API Response: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[11-Mar-2026 04:20:14 UTC] tryAIAnalysis CALLED with length=1976
+[11-Mar-2026 04:20:14 UTC] PHP Deprecated:  Function curl_close() is deprecated since 8.5, as it has no effect since PHP 8.0 in C:\Github Repo\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 150
+[11-Mar-2026 04:20:14 UTC] API Response Code: 404
+[11-Mar-2026 04:20:14 UTC] cURL Error: none
+[11-Mar-2026 04:20:14 UTC] API Response: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[11-Mar-2026 05:32:14 UTC] tryAIAnalysis CALLED with length=5003
+[11-Mar-2026 05:32:14 UTC] PHP Deprecated:  Function curl_close() is deprecated since 8.5, as it has no effect since PHP 8.0 in C:\Github Repo\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 150
+[11-Mar-2026 05:32:14 UTC] API Response Code: 404
+[11-Mar-2026 05:32:14 UTC] cURL Error: none
+[11-Mar-2026 05:32:14 UTC] API Response: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[11-Mar-2026 05:32:27 UTC] tryAIAnalysis CALLED with length=2105
+[11-Mar-2026 05:32:27 UTC] PHP Deprecated:  Function curl_close() is deprecated since 8.5, as it has no effect since PHP 8.0 in C:\Github Repo\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 150
+[11-Mar-2026 05:32:27 UTC] API Response Code: 404
+[11-Mar-2026 05:32:27 UTC] cURL Error: none
+[11-Mar-2026 05:32:27 UTC] API Response: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[11-Mar-2026 05:35:17 UTC] tryAIAnalysis CALLED with length=3624
+[11-Mar-2026 05:35:17 UTC] PHP Deprecated:  Function curl_close() is deprecated since 8.5, as it has no effect since PHP 8.0 in C:\Github Repo\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 150
+[11-Mar-2026 05:35:17 UTC] API Response Code: 404
+[11-Mar-2026 05:35:17 UTC] cURL Error: none
+[11-Mar-2026 05:35:17 UTC] API Response: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
