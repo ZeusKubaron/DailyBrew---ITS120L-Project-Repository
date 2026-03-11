@@ -206,3 +206,38 @@
   }
 }
 
+<<<<<<< Updated upstream
+=======
+[11-Mar-2026 07:51:08 UTC] tryAIAnalysis CALLED with length=3624
+[11-Mar-2026 07:51:08 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function curl_init() in C:\Github Repo\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php:137
+Stack trace:
+#0 C:\Github Repo\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php(51): tryAIAnalysis('Filename: javas...')
+#1 {main}
+  thrown in C:\Github Repo\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 137
+[11-Mar-2026 07:53:02 UTC] tryAIAnalysis CALLED with length=3624
+[11-Mar-2026 07:53:02 UTC] PHP Deprecated:  Function curl_close() is deprecated since 8.5, as it has no effect since PHP 8.0 in C:\Github Repo\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 150
+[11-Mar-2026 07:53:02 UTC] API Response Code: 404
+[11-Mar-2026 07:53:02 UTC] cURL Error: none
+[11-Mar-2026 07:53:02 UTC] API Response: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[11-Mar-2026 08:13:31 UTC] tryAIAnalysis CALLED with length=1976
+[11-Mar-2026 08:13:31 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function curl_init() in C:\Users\John Caluag\Downloads\DailyBrew---ITS120L-Project-Repository\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php:137
+Stack trace:
+#0 C:\Users\John Caluag\Downloads\DailyBrew---ITS120L-Project-Repository\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php(51): tryAIAnalysis('Filename: colle...')
+#1 {main}
+  thrown in C:\Users\John Caluag\Downloads\DailyBrew---ITS120L-Project-Repository\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 137
+[11-Mar-2026 08:19:29 UTC] tryAIAnalysis CALLED with length=1976
+[11-Mar-2026 08:19:29 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function curl_init() in C:\Users\John Caluag\Downloads\DailyBrew---ITS120L-Project-Repository\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php:138
+Stack trace:
+#0 C:\Users\John Caluag\Downloads\DailyBrew---ITS120L-Project-Repository\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php(51): tryAIAnalysis('Filename: colle...')
+#1 {main}
+  thrown in C:\Users\John Caluag\Downloads\DailyBrew---ITS120L-Project-Repository\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 138
+[11-Mar-2026 08:21:55 UTC] tryAIAnalysis CALLED with length=1976
+[11-Mar-2026 08:21:55 UTC] cURL is not available - using local analysis
+>>>>>>> Stashed changes

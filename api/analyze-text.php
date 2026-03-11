@@ -90,8 +90,16 @@ echo json_encode([
 
 function tryAIAnalysis($prompt) {
     error_log("tryAIAnalysis CALLED with length=" . strlen($prompt));
+    
+    // Check if cURL is available
+    if (!function_exists('curl_init')) {
+        error_log("cURL is not available - using local analysis");
+        return ['success' => false, 'error' => 'cURL not available - using local analysis'];
+    }
+    
     $apiKey = 'AIzaSyDPWNWnNVBoX-FRq9qZbHOQe17wgf2OafM';
-    $url = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=' . $apiKey;
+    // Use gemini-2.0-flash model which is currently available
+    $url = 'https://generativelanguage.googleapis.com/v1beta3/models/gemini-2.0-flash:generateContent?key=' . $apiKey;
     
     // Simpler, more direct prompt
     // Focused academic prompt, same JSON fields
