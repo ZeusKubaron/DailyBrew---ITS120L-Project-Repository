@@ -98,8 +98,13 @@ function tryAIAnalysis($prompt) {
     }
     
     $apiKey = 'AIzaSyDPWNWnNVBoX-FRq9qZbHOQe17wgf2OafM';
+<<<<<<< Updated upstream
     // Use gemini-2.0-flash model which is currently available
     $url = 'https://generativelanguage.googleapis.com/v1beta3/models/gemini-2.0-flash:generateContent?key=' . $apiKey;
+=======
+    // Use v1 API endpoint (not v1beta) for gemini-1.5-flash
+    $url = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-8b:generateContent?key=' . $apiKey;
+>>>>>>> Stashed changes
     
     // Simpler, more direct prompt
     // Focused academic prompt, same JSON fields
