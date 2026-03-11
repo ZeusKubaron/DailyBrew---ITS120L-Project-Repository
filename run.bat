@@ -25,6 +25,6 @@ if not exist "php\php.exe" (
 echo Starting server at http://localhost:8000
 echo Press Ctrl+C to stop the server
 echo.
-php\php.exe -c php\php.ini -S localhost:8000
+php\php.exe -c php.ini -d extension_dir="php/ext" -S localhost:8000
 pause
 
