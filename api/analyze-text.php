@@ -98,17 +98,11 @@ function tryAIAnalysis($prompt) {
     }
     
     $apiKey = 'AIzaSyDPWNWnNVBoX-FRq9qZbHOQe17wgf2OafM';
-<<<<<<< Updated upstream
-    // Use gemini-2.0-flash model which is currently available
-    $url = 'https://generativelanguage.googleapis.com/v1beta3/models/gemini-2.0-flash:generateContent?key=' . $apiKey;
-=======
-    // Use v1 API endpoint (not v1beta) for gemini-1.5-flash
+    // Use v1 API endpoint for gemini-1.5-flash
     $url = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-8b:generateContent?key=' . $apiKey;
->>>>>>> Stashed changes
     
-    // Simpler, more direct prompt
-    // Focused academic prompt, same JSON fields
-$systemPrompt = "You are an academic assistant for college students. The user will send you the FULL TEXT of an assignment or activity document.
+    // System prompt for academic document analysis
+    $systemPrompt = "You are an academic assistant for college students. The user will send you the FULL TEXT of an assignment or activity document.
 
 Your job:
 - Identify ONE main task the STUDENT must do.
@@ -180,7 +174,6 @@ Important:
             $text = $result['candidates'][0]['content']['parts'][0]['text'];
             
             // Try to extract JSON from response
-            // Look for JSON object in the response
             if (preg_match('/\{[\s\S]*\}/', $text, $matches)) {
                 $json = json_decode($matches[0], true);
                 if ($json && is_array($json)) {
@@ -219,7 +212,7 @@ function localAnalysis($text) {
         $activityType = 'reading';
     }
     
-    // Detect keywords for title - more specific
+    // Detect keywords for title
     $title = 'Task from Document';
     $keywords = [
         'homework' => 'Homework Task',
@@ -294,9 +287,8 @@ function localAnalysis($text) {
     if ($complexity >= 7) $priority = 'high';
     elseif ($complexity <= 3) $priority = 'low';
     
-    // Generate description - extract first meaningful content
+    // Generate description
     $description = substr($text, 0, 300);
-    // Clean up the description
     $description = preg_replace('/\s+/', ' ', $description);
     if (strlen($text) > 300) $description .= '...';
     

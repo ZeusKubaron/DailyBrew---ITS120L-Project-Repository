@@ -292,3 +292,5 @@ Stack trace:
 }
 
 >>>>>>> Stashed changes
+[11-Mar-2026 10:32:28 UTC] tryAIAnalysis CALLED with length=1976
+[11-Mar-2026 10:32:28 UTC] cURL is not available - using local analysis
