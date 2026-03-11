@@ -87,19 +87,18 @@ echo json_encode([
 ]);
 
 // --- Helper Functions ---
-
 function tryAIAnalysis($prompt) {
     error_log("tryAIAnalysis CALLED with length=" . strlen($prompt));
-    
+
     // Check if cURL is available
-    if (!function_exists('curl_init')) {
-        error_log("cURL is not available - using local analysis");
-        return ['success' => false, 'error' => 'cURL not available - using local analysis'];
-    }
+    // if (!extension_loaded('curl')) {
+    //     error_log("cURL is not available - using local analysis");
+    //     return ['success' => false, 'error' => 'cURL not available - using local analysis'];
+    // }
     
-    $apiKey = 'AIzaSyDPWNWnNVBoX-FRq9qZbHOQe17wgf2OafM';
+    $apiKey = 'AIzaSyDZWjqZyrQP6-DMZb2T2zYkZ1xswphHLSk';
     // Use v1 API endpoint for gemini-1.5-flash
-    $url = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-8b:generateContent?key=' . $apiKey;
+    $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=' . $apiKey;
     
     // System prompt for academic document analysis
     $systemPrompt = "You are an academic assistant for college students. The user will send you the FULL TEXT of an assignment or activity document.
