@@ -46,6 +46,9 @@ function extractJsonFromText($text) {
         return null;
     }
     
+    // Remove thought signature lines if present (Gemini may include thoughtSignature field)
+    $text = preg_replace('/\s*"thoughtSignature":\s*"[^"]*"[,\s]*/', '', $text);
+    
     // First, try the simple approach - if the entire text is valid JSON
     $json = json_decode($text, true);
     if ($json !== null && json_last_error() === JSON_ERROR_NONE) {
@@ -170,8 +173,8 @@ function tryAIAnalysis($prompt) {
     //     return ['success' => false, 'error' => 'cURL not available - using local analysis'];
     // }
     
-    $apiKey = 'AIzaSyAgD67HSavCeSd0Q4cMsgfjNwLWvDhD73c';
-    // Use v1 API endpoint for gemini-1.5-flash
+    $apiKey = 'AIzaSyBU8cr7Lml1L0RJVU1R0x3SNSh9Vy3cNx4';
+    // Use v1beta API endpoint for gemini-2.0-flash
     $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=' . $apiKey;
     
     // System prompt for academic document analysis
@@ -210,7 +213,8 @@ Important:
             'temperature' => 0.3,
             'maxOutputTokens' => 800,
             'topP' => 0.8,
-            'topK' => 40
+            'topK' => 40,
+            'response_mime_type' => 'application/json'
         ]
     ]);
     

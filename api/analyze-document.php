@@ -23,6 +23,9 @@ function extractJsonFromText($text) {
         return null;
     }
     
+    // Remove thought signature lines if present (Gemini may include thoughtSignature field)
+    $text = preg_replace('/\s*"thoughtSignature":\s*"[^"]*"[,\s]*/', '', $text);
+    
     // First, try the simple approach - if the entire text is valid JSON
     $json = json_decode($text, true);
     if ($json !== null && json_last_error() === JSON_ERROR_NONE) {

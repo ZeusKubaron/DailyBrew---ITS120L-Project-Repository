@@ -6,8 +6,8 @@
 
 // Gemini API Configuration
 define('GEMINI_API_KEY', 'AIzaSyDPWNWnNVBoX-FRq9qZbHOQe17wgf2OafM');
-define('GEMINI_MODEL', 'gemini-1.5-flash-8b');
-define('GEMINI_API_URL', 'https://generativelanguage.googleapis.com/v1/models/' . GEMINI_MODEL . ':generateContent');
+define('GEMINI_MODEL', 'gemini-2.0-flash');
+define('GEMINI_API_URL', 'https://generativelanguage.googleapis.com/v1beta/models/' . GEMINI_MODEL . ':generateContent');
 
 /**
  * Send request to Gemini API
@@ -46,10 +46,11 @@ Provide helpful, concise responses about scheduling, task prioritization, and st
     $data = [
         'contents' => $messages,
         'generationConfig' => [
-            'temperature' => 0.9,
+            'temperature' => 0.3,
             'maxOutputTokens' => 2048,
-            'topP' => 0.95,
-            'topK' => 40
+            'topP' => 0.8,
+            'topK' => 40,
+            'response_mime_type' => 'application/json'
         ]
     ];
     
