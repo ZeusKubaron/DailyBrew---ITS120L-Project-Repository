@@ -34,6 +34,80 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+/**
+ * Extract valid JSON from text that may contain extra content after JSON
+ * This handles cases where AI responses include "thought signatures" or other text after the JSON
+ * 
+ * @param string $text The text containing JSON
+ * @return array|null The decoded JSON array or null if no valid JSON found
+ */
+function extractJsonFromText($text) {
+    if (empty($text)) {
+        return null;
+    }
+    
+    // First, try the simple approach - if the entire text is valid JSON
+    $json = json_decode($text, true);
+    if ($json !== null && json_last_error() === JSON_ERROR_NONE) {
+        return $json;
+    }
+    
+    // Find the first opening brace
+    $firstBrace = strpos($text, '{');
+    if ($firstBrace === false) {
+        return null;
+    }
+    
+    // Try extracting JSON starting from each potential opening brace
+    for ($i = $firstBrace; $i < strlen($text); $i++) {
+        if ($text[$i] === '{') {
+            // Try to decode from this position
+            $potentialJson = substr($text, $i);
+            $decoded = json_decode($potentialJson, true);
+            
+            if ($decoded !== null && json_last_error() === JSON_ERROR_NONE) {
+                return $decoded;
+            }
+            
+            // If that fails, try finding where the JSON might end and try again
+            // Look for common patterns that indicate end of JSON
+            $braceCount = 0;
+            $jsonEnd = -1;
+            for ($j = 0; $j < strlen($potentialJson); $j++) {
+                if ($potentialJson[$j] === '{') {
+                    $braceCount++;
+                } elseif ($potentialJson[$j] === '}') {
+                    $braceCount--;
+                    if ($braceCount === 0) {
+                        $jsonEnd = $j + 1;
+                        break;
+                    }
+                }
+            }
+            
+            if ($jsonEnd > 0) {
+                $trimmedJson = substr($potentialJson, 0, $jsonEnd);
+                $decoded = json_decode($trimmedJson, true);
+                
+                if ($decoded !== null && json_last_error() === JSON_ERROR_NONE) {
+                    return $decoded;
+                }
+            }
+        }
+    }
+    
+    // Fallback: try the original greedy regex approach
+    if (preg_match('/\{[\s\S]*\}/', $text, $matches)) {
+        $decoded = json_decode($matches[0], true);
+        if ($decoded !== null) {
+            return $decoded;
+        }
+    }
+    
+    return null;
+}
+
+// Main execution starts here
 // Get input data
 $input = file_get_contents('php://input');
 $data = json_decode($input, true);
@@ -96,7 +170,7 @@ function tryAIAnalysis($prompt) {
     //     return ['success' => false, 'error' => 'cURL not available - using local analysis'];
     // }
     
-    $apiKey = 'AIzaSyDZWjqZyrQP6-DMZb2T2zYkZ1xswphHLSk';
+    $apiKey = 'AIzaSyAgD67HSavCeSd0Q4cMsgfjNwLWvDhD73c';
     // Use v1 API endpoint for gemini-1.5-flash
     $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=' . $apiKey;
     
@@ -172,16 +246,15 @@ Important:
         if (isset($result['candidates'][0]['content']['parts'][0]['text'])) {
             $text = $result['candidates'][0]['content']['parts'][0]['text'];
             
-            // Try to extract JSON from response
-            if (preg_match('/\{[\s\S]*\}/', $text, $matches)) {
-                $json = json_decode($matches[0], true);
-                if ($json && is_array($json)) {
-                    // Validate required fields
-                    if (!isset($json['title']) || empty($json['title'])) {
-                        return ['success' => false, 'error' => 'Invalid response: no title'];
-                    }
-                    return ['success' => true, 'data' => $json];
+            // Use the robust JSON extraction function to handle extra text after JSON
+            $json = extractJsonFromText($text);
+            
+            if ($json && is_array($json)) {
+                // Validate required fields
+                if (!isset($json['title']) || empty($json['title'])) {
+                    return ['success' => false, 'error' => 'Invalid response: no title'];
                 }
+                return ['success' => true, 'data' => $json];
             }
             
         }
