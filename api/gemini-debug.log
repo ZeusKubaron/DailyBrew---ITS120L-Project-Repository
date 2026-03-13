@@ -292,3 +292,96 @@ Stack trace:
 }
 
 >>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+[11-Mar-2026 10:32:28 UTC] tryAIAnalysis CALLED with length=1976
+[11-Mar-2026 10:32:28 UTC] cURL is not available - using local analysis
+[12-Mar-2026 14:42:05 UTC] tryAIAnalysis CALLED with length=1976
+[12-Mar-2026 14:42:25 UTC] PHP Deprecated:  Function curl_close() is deprecated since 8.5, as it has no effect since PHP 8.0 in C:\Users\John Caluag\Downloads\DailyBrew---ITS120L-Project-Repository\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 234
+[12-Mar-2026 14:42:25 UTC] API Response Code: 503
+[12-Mar-2026 14:42:25 UTC] cURL Error: none
+[12-Mar-2026 14:42:25 UTC] API Response: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+[12-Mar-2026 15:13:27 UTC] tryAIAnalysis CALLED with length=1976
+[12-Mar-2026 15:13:27 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function curl_init() in C:\Users\John Caluag\Downloads\DailyBrew---ITS120L-Project-Repository\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php:221
+Stack trace:
+#0 C:\Users\John Caluag\Downloads\DailyBrew---ITS120L-Project-Repository\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php(128): tryAIAnalysis('Filename: colle...')
+#1 {main}
+  thrown in C:\Users\John Caluag\Downloads\DailyBrew---ITS120L-Project-Repository\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 221
+[12-Mar-2026 15:14:35 UTC] tryAIAnalysis CALLED with length=1976
+[12-Mar-2026 15:15:05 UTC] PHP Fatal error:  Maximum execution time of 30 seconds exceeded in C:\Users\John Caluag\Downloads\DailyBrew---ITS120L-Project-Repository\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 231
+Stack trace:
+#0 C:\Users\John Caluag\Downloads\DailyBrew---ITS120L-Project-Repository\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php(231): curl_exec(Object(CurlHandle))
+#1 C:\Users\John Caluag\Downloads\DailyBrew---ITS120L-Project-Repository\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php(128): tryAIAnalysis('Filename: colle...')
+#2 {main}
+[12-Mar-2026 15:17:51 UTC] tryAIAnalysis CALLED with length=1976
+[12-Mar-2026 15:17:55 UTC] PHP Deprecated:  Function curl_close() is deprecated since 8.5, as it has no effect since PHP 8.0 in C:\Users\John Caluag\Downloads\DailyBrew---ITS120L-Project-Repository\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 234
+[12-Mar-2026 15:17:55 UTC] API Response Code: 503
+[12-Mar-2026 15:17:55 UTC] cURL Error: none
+[12-Mar-2026 15:17:55 UTC] API Response: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+[12-Mar-2026 15:34:07 UTC] tryAIAnalysis CALLED with length=1976
+[12-Mar-2026 15:34:37 UTC] PHP Fatal error:  Maximum execution time of 30 seconds exceeded in C:\Users\John Caluag\Downloads\DailyBrew---ITS120L-Project-Repository\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 231
+Stack trace:
+#0 C:\Users\John Caluag\Downloads\DailyBrew---ITS120L-Project-Repository\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php(231): curl_exec(Object(CurlHandle))
+#1 C:\Users\John Caluag\Downloads\DailyBrew---ITS120L-Project-Repository\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php(128): tryAIAnalysis('Filename: colle...')
+#2 {main}
+[12-Mar-2026 15:37:30 UTC] tryAIAnalysis CALLED with length=1976
+[12-Mar-2026 15:37:32 UTC] PHP Deprecated:  Function curl_close() is deprecated since 8.5, as it has no effect since PHP 8.0 in C:\Users\John Caluag\Downloads\DailyBrew---ITS120L-Project-Repository\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 234
+[12-Mar-2026 15:37:32 UTC] API Response Code: 503
+[12-Mar-2026 15:37:32 UTC] cURL Error: none
+[12-Mar-2026 15:37:32 UTC] API Response: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+[12-Mar-2026 15:38:57 UTC] tryAIAnalysis CALLED with length=1976
+[12-Mar-2026 15:39:10 UTC] PHP Deprecated:  Function curl_close() is deprecated since 8.5, as it has no effect since PHP 8.0 in C:\Users\John Caluag\Downloads\DailyBrew---ITS120L-Project-Repository\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 234
+[12-Mar-2026 15:39:10 UTC] API Response Code: 503
+[12-Mar-2026 15:39:10 UTC] cURL Error: none
+[12-Mar-2026 15:39:10 UTC] API Response: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+[12-Mar-2026 15:40:58 UTC] tryAIAnalysis CALLED with length=1976
+[12-Mar-2026 15:41:03 UTC] PHP Deprecated:  Function curl_close() is deprecated since 8.5, as it has no effect since PHP 8.0 in C:\Users\John Caluag\Downloads\DailyBrew---ITS120L-Project-Repository\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 234
+[12-Mar-2026 15:41:03 UTC] API Response Code: 200
+[12-Mar-2026 15:41:03 UTC] cURL Error: none
+[12-Mar-2026 15:41:03 UTC] API Response: {
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "{\n    \"title\": \"ENG 101 Personal Narrative College Essay\",\n    \"activity_type\": \"essay\",\n    \"due_date\": \"2026-03-29\",\n    \"description\": \"Write a 600–800 word personal narrative essay responding to one of three prompts regarding a challenge, community, or impactful moment, including a reflection on personal growth.\",\n    \"priority\": \"high\",\n    \"complexity\": 7,\n    \"s
+[13-Mar-2026 00:57:07 UTC] tryAIAnalysis CALLED with length=1976
+[13-Mar-2026 00:57:11 UTC] PHP Deprecated:  Function curl_close() is deprecated since 8.5, as it has no effect since PHP 8.0 in C:\Users\John Caluag\Downloads\DailyBrew---ITS120L-Project-Repository\DailyBrew---ITS120L-Project-Repository\api\analyze-text.php on line 234
+[13-Mar-2026 00:57:11 UTC] API Response Code: 200
+[13-Mar-2026 00:57:11 UTC] cURL Error: none
+[13-Mar-2026 00:57:11 UTC] API Response: {
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "{\n    \"title\": \"ENG 101 Personal Narrative College Essay\",\n    \"activity_type\": \"essay\",\n    \"due_date\": \"2026-03-29\",\n    \"description\": \"Write a 600–800 word personal narrative essay responding to a prompt about a challenge, community, or impactful moment, including a reflection on personal growth.\",\n    \"priority\": \"high\",\n    \"complexity\": 7,\n    \"study_tips\": \"F
+>>>>>>> Stashed changes
