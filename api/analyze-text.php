@@ -173,7 +173,7 @@ function tryAIAnalysis($prompt) {
     //     return ['success' => false, 'error' => 'cURL not available - using local analysis'];
     // }
     
-    $apiKey = 'AIzaSyBU8cr7Lml1L0RJVU1R0x3SNSh9Vy3cNx4';
+    $apiKey = 'AIzaSyAu3goL8-u26_92WNicU-8E23k8Yaox1BI';
     // Use v1beta API endpoint for gemini-2.0-flash
     $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=' . $apiKey;
     
